@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loss History Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root {
+            font-size: 12px;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #f8f8f8;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: #3d3d3d;
+        }
+
+        #insurance-history-form {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #fff;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+        }
+
+        .panel-title {
+            margin: 0 0 1.5rem;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2a2a2a;
+        }
+
+        .policy-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .panel {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #fff;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+        }
+
+        .panel.faded {
+            opacity: 0.5;
+        }
+
+        .panel .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .panel .summary-table th,
+        .panel .summary-table td {
+            border: 1px solid #d8d8d8;
+            padding: 0.7rem 0.8rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .panel .summary-table th {
+            background: #eef2f4;
+            color: #3d3d3d;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.82rem;
+        }
+
+        .panel .summary-table td {
+            background: #fff;
+        }
+
+        #insurance-history-summary-table {
+            display: none;
+        }
+
+        #large-losses-list {
+            display: none;
+        }
+
+        .form-field input[type="text"][readonly],
+        .form-field input[type="date"][readonly],
+        .form-field textarea[readonly] {
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            padding: 0;
+            color: #333;
+            font: inherit;
+            min-height: auto;
+            height: auto;
+            outline: none;
+            cursor: default;
+        }
+
+        .large-loss-entry {
+            border: 1px solid #d8d8d8;
+            border-radius: 8px;
+            background: #fbfbfb;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .large-loss-details {
+            grid-column: span 5;
+        }
+
+        .form-entry {
+            border: 1px solid #d8d8d8;
+            border-radius: 8px;
+            background: #fbfbfb;
+            padding: 1rem;
+            position: relative;
+        }
+
+        .policy-entry-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .policy-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2f2f2f;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: minmax(240px, 1.1fr) repeat(5, minmax(150px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+        .large-loss-entry-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+    
+        /* .coverage-label {
+            display: block;
+            font-size: 0.82rem;
+            color: #666;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        } */
+
+        .multiselect {
+            width: 100%;
+            position: relative;
+        }
+
+        .selectBox {
+            position: relative;
+            border: 1px solid #bcbcbc;
+            border-radius: 4px;
+            background: #fff;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+        }
+
+        .selectBox select {
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 38px;
+            border: none;
+            outline: none;
+            background: transparent;
+            font: inherit;
+            color: #333;
+            padding: 0.4rem 2rem 0.4rem 0.6rem;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .selectBox::after {
+            content: '';
+            border: solid #4f4f4f;
+            border-width: 0 2px 2px 0;
+            display: inline-block;
+            padding: 3px;
+            transform: rotate(45deg);
+            position: absolute;
+            right: 12px;
+            top: calc(50% - 4px);
+            pointer-events: none;
+        }
+
+        .overSelect {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            cursor: pointer;
+        }
+
+        .checkboxes {
+            display: none;
+            position: absolute;
+            z-index: 3;
+            background: #fff;
+            min-width: 100%;
+            border: 1px solid #bcbcbc;
+            border-radius: 4px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+            padding: 0.4rem 0;
+        }
+
+        .checkboxes.open {
+            display: block;
+        }
+
+        .checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.9rem;
+            color: #333;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .checkboxes label:hover {
+            background: #f2f2f2;
+        }
+
+        .claims-form {
+            display: none;
+            width: 100%;
+            margin-top: 1rem;
+            box-sizing: border-box;
+            border-top: 1px solid #d8d8d8;
+            padding-top: 1rem;
+        }
+
+        .claims-form.open {
+            display: block;
+        }
+
+        .claims-form-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .claims-form-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .claims-form-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #3d3d3d;
+        }
+
+        .claim-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .claim-table-header {
+            display: grid;
+            grid-template-columns: repeat(9, minmax(120px, 1fr));
+            gap: 0.5rem;
+            align-items: center;
+            /* padding: 0.4rem 0.6rem;
+            background: #eceae9;
+            border: 1px solid #d8d8d8;
+            border-radius: 4px; */
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #4f4f4f;
+            text-transform: uppercase;
+        }
+
+        .claim-table-header .claim-action-header {
+            text-align: center;
+        }
+
+        .claim-entry {
+            display: grid;
+            grid-template-columns: repeat(9, minmax(120px, 1fr));
+            gap: 0.5rem;
+            align-items: center;
+            /* border: 1px solid #d8d8d8;
+            border-radius: 4px;
+            padding: 0.5rem 0.6rem;
+            background: #fafafa; */
+            margin-right: 0.6rem;
+        }
+
+        .claim-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .claim-field label {
+            display: none;
+        }
+
+        .claim-field textarea,
+        .claim-field input[type="date"],
+        .claim-field input[type="text"],
+        .claim-field select {
+            width: 100%;
+            box-sizing: border-box;
+            height: 32px;
+            border: 1px solid #bcbcbc;
+            border-radius: 4px;
+            padding: 0.3rem 0.45rem;
+            font: inherit;
+            color: #333;
+            background: #fff;
+        }
+
+        .claim-remove {
+            background: #a33c3c;
+            color: #fff;
+            width: 36px;
+            height: 32px;
+            padding: 0.25rem 0.4rem;
+            font-size: 1.0rem;
+            line-height: 1;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-field label {
+            font-size: 0.82rem;
+            color: #666;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .form-field input[type="text"],
+        .form-field input[type="date"],
+        .form-field textarea {
+            width: 100%;
+            box-sizing: border-box;
+            height: 38px;
+            border: 1px solid #bcbcbc;
+            border-radius: 4px;
+            padding: 0.4rem 0.6rem;
+            font: inherit;
+            color: #333;
+        }
+        .form-field textarea {
+            height: auto;
+        }
+
+        .form-field input[type="text"]::placeholder {
+            color: #999;
+        }
+
+        .form-entry:has(.policy-actions) {
+            padding-bottom: 4rem;
+        }
+
+        .policy-actions {
+            display: flex;
+            gap: 0;
+            flex-wrap: nowrap;
+            align-items: stretch;
+            margin-top: 0;
+            justify-content: stretch;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            left: 0;
+            background: #fbfbfb;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+        }
+
+        .policy-actions .button {
+            flex-grow: 1;
+            border-radius: 0;
+            padding: 0.45rem 0.7rem;
+            min-width: 34px;
+            height: 34px;
+            font-size: 1rem;
+            border-left: 2px solid rgba(255,255,255,0.25);
+        }
+        .policy-actions .button:first-of-type {
+            border-left: none;
+        }
+
+        .file-upload-widget {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .file-picker {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            border: 1px solid #4f4f4f;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+            background: #2c6b2f;
+            color: #fff;
+            padding: 0.8rem 1.2rem;
+            margin-top: 1rem;
+        }
+
+        
+
+        .file-picker:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .file-picker input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-picker .file-picker-name {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .upload-button {
+            background: #2c6b2f;
+            color: #fff;
+            border-radius: 4px;
+            padding: 0.65rem 0.95rem;
+        }
+
+        .button {
+            border: none;
+            border-radius: 4px;
+            padding: 0.65rem 0.95rem;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 160ms ease, transform 160ms ease;
+        }
+
+        .button:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .policy-button {
+            background: #4f4f4f;
+            color: #fff;
+        }
+
+        .remove-button {
+            background: #a33c3c;
+            color: #fff;
+        }
+
+        .page-loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(45, 45, 45, 0.45);
+            backdrop-filter: blur(1px);
+        }
+
+        .page-loading-card {
+            min-width: min(440px, calc(100vw - 2rem));
+            background: #fff;
+            color: #2e2e2e;
+            padding: 1.6rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.22);
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .upload-loading {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            padding: 0.85rem 1rem;
+            border-radius: 8px;
+            background: #eef4f7;
+            color: #3d3d3d;
+            font-weight: 700;
+        }
+
+        .upload-spinner {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #a3b5be;
+            border-top-color: #2c6b2f;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .upload-error {
+            display: none;
+            margin-top: 1rem;
+            color: #b92d2d;
+            font-weight: 700;
+            background: #fff1f1;
+            border-left: 4px solid #b92d2d;
+            padding: 0.75rem 1rem;
+        }
+
+        .add-policy-button {
+            background: #2c6b2f;
+            color: #fff;
+            padding: 0.8rem 1.2rem;
+            margin-top: 1rem;
+        }
+
+        .fa-solid {
+            font-size: 1.6em;
+            vertical-align: middle;
+            margin-right: 0.25em;
+        }
+
+        .remove-claim .fa-solid {
+            margin-right: 0;
+        }
+
+        @media (max-width: 900px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        #finale {
+            max-width: 1148px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="page-loading-overlay" class="page-loading-overlay">
+        <div class="page-loading-card">
+            <span class="upload-spinner" aria-hidden="true"></span>
+            <span id="page-loading-message">Processing PDF...</span>
+        </div>
+    </div>
+
+    <section id="upload-loss-run" class="panel">
+        <h1 class="panel-title">Upload Loss Run</h1>
+        <p>Have a loss run file? Use the button below to upload and automatically populate your insurance history.</p>
+        <form id="loss-run-upload-form" method="post" action="/upload" enctype="multipart/form-data">
+            <div class="file-upload-widget">
+                <label class="file-picker">
+                    <span class="file-picker-name"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i> <span id="file-name">Upload loss run file</span></span>
+                    <input type="file" name="lossRunFile" accept=".pdf" required />
+                </label>
+            </div>
+        </form>
+        <div id="upload-loading" class="upload-loading" style="display:none;">
+            <span class="upload-spinner" aria-hidden="true"></span>
+            <span id="upload-status-text">Uploading PDF...</span>
+        </div>
+        <div id="upload-error" class="upload-error"></div>
+    </section>
+
+    <form id="insurance-history-form" method="post" action="/submit">
+        <input type="hidden" name="lossRunData" value="" />
+        <h1 class="panel-title">Insurance History</h1>
+        <p id="tip-for-policy-list">Does the insured have any prior policies? Click the button below to start inputting prior policy information, starting with the most recent.</p>
+
+        <div id="policy-list" class="policy-list">
+        </div>
+
+        <button type="button" id="add-policy" class="button add-policy-button"><i class="fa-solid fa-square-plus" aria-hidden="true"></i> Add prior policy information</button>
+    </form>
+
+    <section id="insurance-history-summary-panel" class="panel faded">
+        <h1 class="panel-title">Summary By Year</h1>
+        <p id="tip-for-insurance-history">Input policy and loss information above to see a summary by year.</p>
+        <table id="insurance-history-summary-table" class="summary-table">
+            <thead>
+                <tr>
+                    <th>Policy Year</th>
+                    <th>Insurer</th>
+                    <th>Lines of Coverage</th>
+                    <th># Claims</th>
+                    <th># Open Claims</th>
+                    <th>Total Paid</th>
+                    <th>Total Reserve</th>
+                    <th>Total Incurred</th>
+                </tr>
+            </thead>
+            <tbody id="insurance-history-summary-body"></tbody>
+        </table>
+    </section>
+
+    <section id="large-losses" class="panel faded">
+        <h1 class="panel-title">Large Losses</h1>
+        <p id="tip-for-large-losses">Input policy and loss information above to see a list of large losses.</p>
+        <div id="large-losses-list"></div>
+    </section>
+
+    <section id="finale">
+        <input id="continue-button" type="submit" value="Continue" class="button" style="font-size: 1.5rem; background: #2c6b2f; color: #fff; font-weight: 700; padding: 0.8rem 1.2rem; margin-top: 1rem;" />
+    </section>
+
+    <script>
+        const DOCUMENT_PROCESSOR_APIKEY = 'YJ8o39NuCNyTQaNsOn2h03ma4ooNb9txGcrj4ZY9MfYh7y0CDlmvBOEuW1U0A48G';
+        const policyList = document.getElementById('policy-list');
+        const addPolicyButton = document.getElementById('add-policy');
+        const continueButton = document.getElementById('continue-button');
+        let policyNumber = 0;
+
+        function dateToISO(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function addYearsToDate(dateString, years) {
+            if (!dateString) return '';
+            const date = new Date(dateString + 'T00:00:00');
+            date.setFullYear(date.getFullYear() + years);
+            return dateToISO(date);
+        }
+
+        function addYearToDate(dateString, years) {
+            if (!dateString) return '';
+            const date = new Date(dateString + 'T00:00:00');
+            date.setFullYear(date.getFullYear() + years);
+            return dateToISO(date);
+        }
+
+        function parsePolicyNumber(policyNumber) {
+            const raw = (policyNumber || '').trim();
+            const match = raw.match(/^(.*)-([0-9]{2})$/);
+            if (!match) {
+                return { base: raw, suffix: null, hasSuffix: false };
+            }
+            return { base: match[1], suffix: Number(match[2]), hasSuffix: true };
+        }
+
+        function formatSuffix(value) {
+            return String(value).padStart(2, '0');
+        }
+
+        function getPolicyNumberField(policy) {
+            const policyIndex = Number(policy.dataset.policyIndex);
+            return policy.querySelector('[name="policies[' + policyIndex + '][policyNumber]"]');
+        }
+
+        function syncAddPolicyButtonLabel() {
+            const hasPolicies = policyList.querySelectorAll('.policy-entry').length > 0;
+            if (addPolicyButton) {
+                addPolicyButton.innerHTML = '<i class="fa-solid fa-square-plus" aria-hidden="true"></i>' + (hasPolicies ? 'Add another prior policy' : 'Add prior policy information');
+            }
+        }
+
+        function syncPolicyListTip() {
+            const tip = document.getElementById('tip-for-policy-list');
+            if (!tip) return;
+            const hasPolicies = policyList.querySelectorAll('.policy-entry').length > 0;
+            tip.style.display = hasPolicies ? 'none' : 'block';
+        }
+
+        function setAddClaimsButtonLabel(addClaimsButton, label) {
+            if (!addClaimsButton) return;
+            const text = label || 'Add claim';
+            addClaimsButton.innerHTML = '<i class="fa-solid fa-square-plus" aria-hidden="true"></i> ' + text;
+        }
+
+        function insurerMatches(left, right) {
+            return String(left || '').trim().toLowerCase() === String(right || '').trim().toLowerCase();
+        }
+
+        function hasPolicyCollision(policy, insurer, effectiveDate) {
+            const policies = Array.from(policyList.querySelectorAll('.policy-entry'));
+            return policies.some(candidate => {
+                if (candidate === policy) return false;
+
+                const candidateIndex = Number(candidate.dataset.policyIndex);
+                const insurerField = candidate.querySelector('[name="policies[' + candidateIndex + '][insurer]"]');
+                const effectiveField = candidate.querySelector('[name="policies[' + candidateIndex + '][effectiveDate]"]');
+
+                return insurerMatches(insurerField ? insurerField.value : '', insurer)
+                    && effectiveField
+                    && effectiveField.value
+                    && effectiveField.value === effectiveDate;
+            });
+        }
+
+        function syncPolicyActionButtons(policy) {
+            if (!policy) return;
+
+            const policyIndex = Number(policy.dataset.policyIndex);
+            const insurerField = policy.querySelector('[name="policies[' + policyIndex + '][insurer]"]');
+            const effectiveField = policy.querySelector('[name="policies[' + policyIndex + '][effectiveDate]"]');
+            const expirationField = policy.querySelector('[name="policies[' + policyIndex + '][expirationDate]"]');
+            const priorButton = policy.querySelector('.add-prior-policy');
+            const renewalButton = policy.querySelector('.add-renewal-policy');
+
+            const insurer = insurerField ? insurerField.value.trim() : '';
+            const effectiveDate = effectiveField ? effectiveField.value : '';
+            const expirationDate = expirationField ? expirationField.value : '';
+
+            const priorCandidateDate = addYearsToDate(effectiveDate, -1);
+            const priorAllowed = Boolean(effectiveDate) && !hasPolicyCollision(policy, insurer, priorCandidateDate);
+            if (priorButton) {
+                priorButton.style.display = priorAllowed ? '' : 'none';
+            }
+
+            const renewalAllowed = Boolean(expirationDate) && !hasPolicyCollision(policy, insurer, expirationDate);
+            if (renewalButton) {
+                renewalButton.style.display = renewalAllowed ? '' : 'none';
+            }
+        }
+
+        function syncPolicyActionButtonsForAll() {
+            const policies = Array.from(policyList.querySelectorAll('.policy-entry'));
+            policies.forEach(syncPolicyActionButtons);
+        }
+
+        function updatePolicyTitle(policy) {
+            if (!policy) return;
+            const policyIndex = Number(policy.dataset.policyIndex);
+            const effectiveField = policy.querySelector('[name="policies[' + policyIndex + '][effectiveDate]"]');
+            const expirationField = policy.querySelector('[name="policies[' + policyIndex + '][expirationDate]"]');
+            const insurerField = policy.querySelector('[name="policies[' + policyIndex + '][insurer]"]');
+            const titleField = policy.querySelector('.policy-title');
+            if (!titleField) return;
+
+            const data = {
+                effectiveDate: effectiveField ? effectiveField.value : '',
+                expirationDate: expirationField ? expirationField.value : '',
+                insurer: insurerField ? insurerField.value : ''
+            };
+
+            titleField.textContent = getPolicyTitle(data);
+        }
+
+        function getPolicyTitle(data = {}) {
+            let policyTitle = `Prior Policy`;
+            if (data.effectiveDate || data.insurer) {
+                const policyTitleParts = [];
+                policyTitle = ``;
+                if (data.effectiveDate) {
+                    const effectiveYear = new Date(data.effectiveDate + 'T00:00:00').getFullYear();
+                    if (data.expirationDate) {
+                        const expirationYear = (new Date(data.expirationDate + 'T00:00:00').getFullYear())-2000;
+                        if (effectiveYear === expirationYear) {
+                            policyTitleParts.push(effectiveYear);
+                        } else {
+                            policyTitleParts.push(`${effectiveYear}-${expirationYear}`);
+                        }
+                    } else {
+                        policyTitleParts.push(effectiveYear);
+                    }
+                }
+                if (data.insurer) {
+                    policyTitleParts.push(data.insurer);
+                }
+                policyTitle = policyTitleParts.join(' ');
+            }
+
+            return policyTitle;
+        }
+
+        function createPolicyEntry(policyIndex, data = {}) {
+            const policy = document.createElement('div');
+            policy.className = 'policy-entry form-entry';
+            policy.dataset.policyIndex = String(policyIndex);
+
+            const coverageLines = Array.isArray(data.coverageLines) ? data.coverageLines : [];
+
+            policy.innerHTML = `
+                <div class="policy-entry-header">
+                    <span class="policy-title">${getPolicyTitle(data)}</span>
+                </div>
+                <div class="policy-row form-row">
+                    <div class="coverage-group form-field">
+                        <label class="coverage-label">Line(s) of Coverage</label>
+                        <div class="multiselect">
+                            <div class="selectBox">
+                                <select class="coverage-select" aria-label="Line(s) of Coverage">
+                                    <option selected>Line(s) of Coverage</option>
+                                </select>
+                                <div class="overSelect"></div>
+                            </div>
+                            <div class="checkboxes">
+                                ${['Auto Liability', 'Auto Physical Damage', 'General Liability'].map(line => `
+                                    <label>
+                                        <input type="checkbox" name="policies[${policyIndex}][linesOfCoverage][]" value="${line}" ${coverageLines.includes(line) ? 'checked' : ''}>
+                                        ${line}
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="policy-field form-field">
+                        <label for="effective-date-${policyIndex}">Effective Date</label>
+                        <input type="date" id="effective-date-${policyIndex}" name="policies[${policyIndex}][effectiveDate]" value="${data.effectiveDate || ''}">
+                    </div>
+
+                    <div class="policy-field form-field">
+                        <label for="expiration-date-${policyIndex}">Expiration Date</label>
+                        <input type="date" id="expiration-date-${policyIndex}" name="policies[${policyIndex}][expirationDate]" value="${data.expirationDate || ''}">
+                    </div>
+
+                    <div class="policy-field form-field">
+                        <label for="insurer-${policyIndex}">Insurer</label>
+                        <input type="text" id="insurer-${policyIndex}" name="policies[${policyIndex}][insurer]" value="${data.insurer || ''}" placeholder="Insurer">
+                    </div>
+
+                    <div class="policy-field form-field">
+                        <label for="premium-${policyIndex}">Premium (USD)</label>
+                        <input type="text" id="premium-${policyIndex}" name="policies[${policyIndex}][premium]" value="${data.premium || ''}" placeholder="Premium">
+                    </div>
+
+                    <div class="policy-field form-field">
+                        <label for="policy-number-${policyIndex}">Policy Number</label>
+                        <input type="text" id="policy-number-${policyIndex}" name="policies[${policyIndex}][policyNumber]" value="${data.policyNumber || ''}" placeholder="Policy Number">
+                    </div>
+                </div>
+
+                <div class="policy-actions">
+                    <button type="button" class="button policy-button add-claims-button"><i class="fa-solid fa-square-plus" aria-hidden="true"></i> Add claim</button>
+                    <button type="button" class="button policy-button add-prior-policy"><i class="fa-solid fa-clone" aria-hidden="true"></i> Add prior policy</button>
+                    <button type="button" class="button policy-button add-renewal-policy"><i class="fa-solid fa-clone" aria-hidden="true"></i> Add renewal policy</button>
+                    <button type="button" class="button remove-button remove-policy" aria-label="Remove"><i class="fa-solid fa-square-xmark" aria-hidden="true"></i> Remove policy</button>
+                </div>
+
+                <div class="claims-form">
+                    <div class="claims-form-header">
+                        <span class="claims-form-title">Claims on policy</span>
+                    </div>
+                    <div class="claim-list">
+                        <div class="claim-table-header">
+                            <div>Incident Date</div>
+                            <div>Status</div>
+                            <div>Incurred</div>
+                            <div>ALAE</div>
+                            <div>Paid</div>
+                            <div>Reserved</div>
+                            <div>Recovered</div>
+                            <div>Details</div>
+                            <div class="claim-action-header"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return policy;
+        }
+
+        function addPolicy() {
+            const policy = createPolicyEntry(policyNumber);
+            policyList.appendChild(policy);
+            policyNumber += 1;
+            syncPolicyActionButtonsForAll();
+            syncAddPolicyButtonLabel();
+            syncPolicyListTip();
+            renderInsuranceHistorySummaryTable();
+            renderLargeLossesSection();
+        }
+
+        function removePolicy(button) {
+            const policy = button.closest('.policy-entry');
+            if (policy) policy.remove();
+            syncPolicyActionButtonsForAll();
+            syncAddPolicyButtonLabel();
+            syncPolicyListTip();
+            renderInsuranceHistorySummaryTable();
+            renderLargeLossesSection();
+        }
+
+        function copyFieldsFromPolicy(sourcePolicy, index, newPolicyData) {
+            const originalPolicy = createPolicyEntry(index, newPolicyData);
+            if (sourcePolicy) {
+                const fields = sourcePolicy.querySelectorAll('input[type="text"], input[type="date"], input[type="checkbox"]');
+                const selectedCoverageLines = [];
+                fields.forEach(field => {
+                    if (field.type === 'checkbox' && field.checked) selectedCoverageLines.push(field.value);
+                });
+                newPolicyData.coverageLines = selectedCoverageLines;
+            }
+            return originalPolicy;
+        }
+
+        function addPriorPolicy(sourcePolicy) {
+            const sourceIndex = Number(sourcePolicy.dataset.policyIndex);
+            const effectiveInput = sourcePolicy.querySelector('[name="policies[' + sourceIndex + '][effectiveDate]"]');
+            const expirationInput = sourcePolicy.querySelector('[name="policies[' + sourceIndex + '][expirationDate]"]');
+            const insurerInput = sourcePolicy.querySelector('[name="policies[' + sourceIndex + '][insurer]"]');
+            const premiumInput = sourcePolicy.querySelector('[name="policies[' + sourceIndex + '][premium]"]');
+            const policyNumberInput = getPolicyNumberField(sourcePolicy);
+
+            const selectedLines = Array.from(sourcePolicy.querySelectorAll('[name="policies[' + sourceIndex + '][linesOfCoverage][]"]:checked')).map(item => item.value);
+            const parsed = parsePolicyNumber(policyNumberInput.value);
+            const base = parsed.base || (policyNumberInput.value || '').trim();
+            let newPolicyNumber = '';
+
+            if (!parsed.hasSuffix) {
+                policyNumberInput.value = base + '-01';
+                newPolicyNumber = base + '-00';
+            } else if (parsed.suffix === 0) {
+                policyNumberInput.value = base + '-01';
+                const policies = Array.from(policyList.querySelectorAll('.policy-entry'));
+                policies.forEach((entry) => {
+                    if (entry === sourcePolicy) return;
+                    const entryNumberField = getPolicyNumberField(entry);
+                    if (!entryNumberField || !entryNumberField.value.trim()) return;
+                    const parsedEntry = parsePolicyNumber(entryNumberField.value);
+                    if (!parsedEntry.hasSuffix) return;
+                    entryNumberField.value = parsedEntry.base + '-' + formatSuffix(parsedEntry.suffix + 1);
+                });
+                newPolicyNumber = base + '-00';
+            } else {
+                newPolicyNumber = base + '-' + formatSuffix(parsed.suffix - 1);
+            }
+
+            const newData = {
+                coverageLines: selectedLines,
+                effectiveDate: addYearsToDate(effectiveInput.value, -1),
+                expirationDate: effectiveInput.value,
+                insurer: insurerInput.value,
+                premium: premiumInput.value,
+                policyNumber: newPolicyNumber
+            };
+
+            const newPolicy = createPolicyEntry(policyNumber, newData);
+            sourcePolicy.insertAdjacentElement('afterend', newPolicy);
+            policyNumber += 1;
+            syncPolicyActionButtonsForAll();
+            renderInsuranceHistorySummaryTable();
+            renderLargeLossesSection();
+        }
+
+        function addRenewalPolicy(sourcePolicy) {
+            const sourceIndex = Number(sourcePolicy.dataset.policyIndex);
+            const effectiveInput = sourcePolicy.querySelector('[name="policies[' + sourceIndex + '][effectiveDate]"]');
+            const expirationInput = sourcePolicy.querySelector('[name="policies[' + sourceIndex + '][expirationDate]"]');
+            const insurerInput = sourcePolicy.querySelector('[name="policies[' + sourceIndex + '][insurer]"]');
+            const premiumInput = sourcePolicy.querySelector('[name="policies[' + sourceIndex + '][premium]"]');
+            const policyNumberInput = getPolicyNumberField(sourcePolicy);
+
+            const selectedLines = Array.from(sourcePolicy.querySelectorAll('[name="policies[' + sourceIndex + '][linesOfCoverage][]"]:checked')).map(item => item.value);
+            const parsed = parsePolicyNumber(policyNumberInput.value);
+            const base = parsed.base || (policyNumberInput.value || '').trim();
+            let newPolicyNumber = '';
+
+            if (!parsed.hasSuffix) {
+                policyNumberInput.value = base + '-00';
+                newPolicyNumber = base + '-01';
+            } else {
+                newPolicyNumber = base + '-' + formatSuffix(parsed.suffix + 1);
+            }
+
+            const newEffective = expirationInput.value;
+            const newData = {
+                coverageLines: selectedLines,
+                effectiveDate: newEffective,
+                expirationDate: addYearsToDate(newEffective, 1),
+                insurer: insurerInput.value,
+                premium: premiumInput.value,
+                policyNumber: newPolicyNumber
+            };
+
+            const newPolicy = createPolicyEntry(policyNumber, newData);
+            sourcePolicy.parentElement.insertBefore(newPolicy, sourcePolicy);
+            policyNumber += 1;
+            syncPolicyActionButtonsForAll();
+            renderInsuranceHistorySummaryTable();
+            renderLargeLossesSection();
+        }
+
+        function syncCoverageSelect(policy) {
+            const checkboxes = Array.from(policy.querySelectorAll('[name="policies[' + Number(policy.dataset.policyIndex) + '][linesOfCoverage][]"]'));
+            const selectedLines = checkboxes.filter(item => item.checked).map(item => item.value);
+            const select = policy.querySelector('.coverage-select');
+            if (!select) return;
+            if (selectedLines.length === 0) {
+                select.innerHTML = '<option selected>Line(s) of Coverage</option>';
+            } else {
+                select.innerHTML = `<option selected>${selectedLines.join(', ')}</option>`;
+            }
+            renderInsuranceHistorySummaryTable();
+        }
+
+        function toggleCoverageDropdown(selectBox) {
+            const checkboxes = selectBox.parentElement.querySelector('.checkboxes');
+            if (!checkboxes) return;
+            checkboxes.classList.toggle('open');
+        }
+
+        function createClaimEntry(policyIndex, claimsIndex, claim = {}) {
+            const claimEntry = document.createElement('div');
+            claimEntry.className = 'claim-entry';
+            claimEntry.dataset.claimIndex = String(claimsIndex);
+            claimEntry.innerHTML = `
+                <div class="claim-field">
+                    <label for="claim-incident-date-${policyIndex}-${claimsIndex}">Incident Date</label>
+                    <input type="date" id="claim-incident-date-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][incidentDate]" value="${claim.incidentDate || ''}">
+                </div>
+                <div class="claim-field">
+                    <label for="claim-status-${policyIndex}-${claimsIndex}">Status</label>
+                    <select id="claim-status-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][status]">
+                        <option value="open" ${claim.status === 'open' ? 'selected' : ''}>open</option>
+                        <option value="closed" ${claim.status === 'closed' ? 'selected' : ''}>closed</option>
+                    </select>
+                </div>
+                <div class="claim-field">
+                    <label for="claim-incurred-${policyIndex}-${claimsIndex}">Incurred</label>
+                    <input type="text" id="claim-incurred-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][incurred]" value="${claim.incurred || ''}" placeholder="Incurred">
+                </div>
+                <div class="claim-field">
+                    <label for="claim-alae-${policyIndex}-${claimsIndex}">ALAE</label>
+                    <input type="text" id="claim-alae-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][alae]" value="${claim.alae || ''}" placeholder="ALAE">
+                </div>
+                <div class="claim-field">
+                    <label for="claim-paid-${policyIndex}-${claimsIndex}">Paid</label>
+                    <input type="text" id="claim-paid-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][paid]" value="${claim.paid || ''}" placeholder="Paid">
+                </div>
+                <div class="claim-field">
+                    <label for="claim-reserved-${policyIndex}-${claimsIndex}">Reserved</label>
+                    <input type="text" id="claim-reserved-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][reserved]" value="${claim.reserved || ''}" placeholder="Reserved">
+                </div>
+                <div class="claim-field">
+                    <label for="claim-recovered-${policyIndex}-${claimsIndex}">Recovered</label>
+                    <input type="text" id="claim-recovered-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][recovered]" value="${claim.recovered || ''}" placeholder="Recovered">
+                </div>
+                <div class="claim-field">
+                    <label for="claim-details-${policyIndex}-${claimsIndex}">Details</label>
+                    <input type="text" id="claim-details-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][details]" value="${claim.details || ''}" placeholder="Details">
+                </div>
+                <div class="claim-field">
+                    <button type="button" class="button claim-remove remove-claim" aria-label="Remove"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                </div>
+            `;
+            return claimEntry;
+        }
+
+        function ensureClaimHeader(claimList) {
+            if (claimList.querySelector('.claim-table-header')) return;
+            const header = document.createElement('div');
+            header.className = 'claim-table-header';
+            header.innerHTML = `
+                <div>Incident Date</div>
+                <div>Status</div>
+                <div>Incurred</div>
+                <div>ALAE</div>
+                <div>Paid</div>
+                <div>Reserved</div>
+                <div>Recovered</div>
+                <div>Details</div>
+                <div class="claim-action-header"></div>
+            `;
+            claimList.appendChild(header);
+        }
+
+        function readMoney(value) {
+            if (value === undefined || value === null || value === '') return 0;
+            const parsed = Number(String(value).replace(/[$,\s]/g, ''));
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount || 0);
+        }
+
+        function escapeHtml(value) {
+            return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        const uploadForm = document.getElementById('loss-run-upload-form');
+        const uploadFileInput = uploadForm && uploadForm.querySelector('input[type="file"]');
+        const uploadFileNameSpan = document.getElementById('file-name');
+        const uploadSubmitButton = uploadForm && uploadForm.querySelector('button[type="submit"]');
+        const loadingPanel = document.getElementById('upload-loading');
+        const loadingText = document.getElementById('upload-status-text');
+        const uploadError = document.getElementById('upload-error');
+        const pageLoadingOverlay = document.getElementById('page-loading-overlay');
+        const pageLoadingMessage = document.getElementById('page-loading-message');
+
+        function setUploadButtonLabel(fileName) {
+            if (!uploadFileNameSpan) return;
+            if (!fileName) {
+                uploadFileNameSpan.innerHTML = 'Upload Loss Run';
+                return;
+            }
+            uploadFileNameSpan.innerHTML = 'Upload file: ' + fileName;
+        }
+
+        if (uploadFileInput && uploadForm) {
+            uploadFileInput.addEventListener('change', function() {
+                const file = uploadFileInput.files && uploadFileInput.files.length > 0 ? uploadFileInput.files[0] : null;
+                if (file) {
+                    setUploadButtonLabel(file.name);
+                    uploadForm.requestSubmit();
+                } else {
+                    setUploadButtonLabel('');
+                }
+            });
+        }
+
+        function showLoading(message) {
+            if (pageLoadingOverlay) {
+                pageLoadingOverlay.style.display = 'flex';
+            }
+            if (pageLoadingMessage) {
+                pageLoadingMessage.textContent = message || 'Processing PDF...';
+            }
+            if (loadingPanel) loadingPanel.style.display = 'flex';
+            if (loadingText) loadingText.textContent = message || 'Uploading PDF...';
+            if (uploadError) {
+                uploadError.textContent = '';
+                uploadError.style.display = 'none';
+            }
+        }
+
+        function hideLoading() {
+            if (pageLoadingOverlay) pageLoadingOverlay.style.display = 'none';
+            if (loadingPanel) loadingPanel.style.display = 'none';
+        }
+
+        function showUploadError(message) {
+            if (uploadError) {
+                uploadError.textContent = message || 'The loss run could not be processed.';
+                uploadError.style.display = 'block';
+            }
+        }
+
+        function normalizeCoverageLines(lines) {
+            if (!Array.isArray(lines)) return [];
+            const mapping = {
+                'Commercial Auto': 'Auto Liability',
+                'Auto Physical Damage': 'Auto Physical Damage',
+                'General Liability': 'General Liability',
+                'Workers Compensation': 'General Liability'
+            };
+            return lines.map(line => mapping[line] || line).filter(line => line === 'Auto Liability' || line === 'Auto Physical Damage' || line === 'General Liability');
+        }
+
+        function normalizeClaimStatus(status) {
+            if (!status) return 'open';
+            const normalized = String(status).toLowerCase();
+            if (normalized === 'closed' || normalized === 'denied') return 'closed';
+            return 'open';
+        }
+
+        function toDateInputValue(inputDate) {
+            if (!inputDate) return '';
+            if (/^\d{4}-\d{2}-\d{2}$/.test(inputDate)) return inputDate;
+            if (inputDate instanceof Date) return dateToISO(inputDate);
+            return String(inputDate).slice(0, 10);
+        }
+
+        function getCarrierName(carrier) {
+            if (!carrier) return '';
+            if (typeof carrier === 'string') return carrier;
+            if (typeof carrier === 'object' && carrier.name) return carrier.name;
+            if (Array.isArray(carrier)) return carrier.map(c => getCarrierName(c)).filter(Boolean).join(', ');
+            return '';
+        }
+
+        function clearPolicyList() {
+            policyList.innerHTML = '';
+            policyNumber = 0;
+            syncAddPolicyButtonLabel();
+            syncPolicyListTip();
+        }
+
+        function computeFileHash(file) {
+            return file.arrayBuffer().then(buffer => {
+                return window.crypto.subtle.digest('SHA-256', buffer);
+            }).then(hashBuffer => {
+                return Array.from(new Uint8Array(hashBuffer)).map(byte => byte.toString(16).padStart(2, '0')).join('');
+            });
+        }
+
+        function getCachedExtraction(hash) {
+            try {
+                const key = 'document-processor-cache-v1:' + hash;
+                const cached = localStorage.getItem(key);
+                if (!cached) return null;
+                return JSON.parse(cached);
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function cacheExtraction(hash, payload) {
+            try {
+                const key = 'document-processor-cache-v1:' + hash;
+                localStorage.setItem(key, JSON.stringify(payload));
+            } catch (error) {
+                // ignore storage quota or sandbox failures
+            }
+        }
+
+        function createPoliciesFromLossRun(output) {
+            const policies = Array.isArray(output?.policies) ? output.policies : [];
+            const claims = Array.isArray(output?.claims) ? output.claims : [];
+            clearPolicyList();
+
+            policies.forEach((policy, index) => {
+                const lines = normalizeCoverageLines(policy.lines_of_coverage || []);
+                const insurer = getCarrierName(policy.carrier);
+                const policyEntry = createPolicyEntry(index, {
+                    effectiveDate: toDateInputValue(policy.effective_date),
+                    expirationDate: toDateInputValue(policy.expiration_date),
+                    insurer,
+                    premium: '',
+                    policyNumber: policy.policy_number || '',
+                    coverageLines: lines
+                });
+
+                policyList.appendChild(policyEntry);
+                syncPolicyActionButtons(policyEntry);
+
+                const policyIndex = Number(policyEntry.dataset.policyIndex);
+                const selectedLines = Array.from(policyEntry.querySelectorAll('[name="policies[' + policyIndex + '][linesOfCoverage][]"]'));
+                selectedLines.forEach(checkbox => {
+                    checkbox.checked = lines.includes(checkbox.value);
+                });
+                syncCoverageSelect(policyEntry);
+
+                const claimList = policyEntry.querySelector('.claim-list');
+                ensureClaimHeader(claimList);
+
+                const matchingClaims = claims.filter(claim => claim.policy_number === policy.policy_number);
+                matchingClaims.forEach((claim, claimIndex) => {
+                    const claimEntry = createClaimEntry(policyIndex, claimIndex, {
+                        incidentDate: toDateInputValue(claim.loss_date),
+                        status: normalizeClaimStatus(claim.claim_status),
+                        incurred: claim.incurred_amount ?? '',
+                        alae: claim.alae_amount ?? '',
+                        paid: claim.paid_amount ?? '',
+                        reserved: claim.reserved_amount ?? '',
+                        recovered: claim.recovered_amount ?? '',
+                        details: claim.loss_description || claim.claim_number || ''
+                    });
+                    claimList.appendChild(claimEntry);
+                });
+
+                const claimsForm = policyEntry.querySelector('.claims-form');
+                const addClaimsButton = policyEntry.querySelector('.add-claims-button');
+                const claimsFooter = policyEntry.querySelector('.claims-form-footer');
+                if (matchingClaims.length > 0) {
+                    claimsForm.classList.add('open');
+                    claimsForm.style.display = 'block';
+                    setAddClaimsButtonLabel(addClaimsButton, 'Add another claim');
+                    if (claimsFooter) claimsFooter.style.display = 'block';
+                } else {
+                    claimsForm.classList.remove('open');
+                    claimsForm.style.display = 'none';
+                    setAddClaimsButtonLabel(addClaimsButton, 'Add claim');
+                    if (claimsFooter) claimsFooter.style.display = 'none';
+                }
+
+                policyNumber += 1;
+            });
+
+            syncAddPolicyButtonLabel();
+            syncPolicyListTip();
+            renderInsuranceHistorySummaryTable();
+            renderLargeLossesSection();
+            syncInsuranceHistoryVisibility();
+        }
+
+        async function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function uploadAndPopulateLossRun(event) {
+            event.preventDefault();
+            if (!uploadFileInput || !uploadFileInput.files || uploadFileInput.files.length === 0) {
+                showUploadError('Choose a PDF file to upload.');
+                return;
+            }
+
+            const file = uploadFileInput.files[0];
+            if (file.type && file.type !== 'application/pdf') {
+                showUploadError('Please choose a PDF file.');
+                return;
+            }
+
+            const fileHash = await computeFileHash(file);
+            const cached = getCachedExtraction(fileHash);
+            if (cached && cached.output) {
+                showLoading('Reusing cached extraction...');
+                createPoliciesFromLossRun(cached.output);
+                hideLoading();
+                return;
+            }
+
+            showLoading('Uploading PDF...');
+            const formData = new FormData();
+            formData.append('file', file, file.name);
+
+            try {
+                const uploadResponse = await fetch('https://api.dev.blackshieldrisk.com/document', {
+                    method: 'POST',
+                    headers: {
+                        'x-api-key': DOCUMENT_PROCESSOR_APIKEY
+                    },
+                    body: formData
+                });
+
+                if (!uploadResponse.ok) {
+                    const errorBody = await uploadResponse.json().catch(() => ({}));
+                    throw new Error(errorBody.message || 'The document processor rejected the upload.');
+                }
+
+                const accepted = await uploadResponse.json();
+                const documentId = accepted.documentId;
+                if (!documentId) throw new Error('The upload response did not include a documentId.');
+
+                showLoading('Processing PDF...');
+                const completed = await pollDocument(documentId);
+                if (!completed || !completed.output) {
+                    throw new Error('The loss run could not be extracted.');
+                }
+
+                cacheExtraction(fileHash, { output: completed.output, documentId: documentId, status: completed.status });
+                createPoliciesFromLossRun(completed.output);
+                hideLoading();
+            } catch (error) {
+                hideLoading();
+                showUploadError(error.message || 'The loss run could not be processed.');
+            }
+        }
+
+        async function pollDocument(documentId) {
+            const url = 'https://api.dev.blackshieldrisk.com/documents/' + documentId;
+            for (let attempt = 0; attempt < 80; attempt += 1) {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'x-api-key': DOCUMENT_PROCESSOR_APIKEY
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json().catch(() => ({}));
+                    throw new Error(errorBody.message || 'The document processor could not retrieve the extraction.');
+                }
+
+                const document = await response.json();
+                if (document.status === 'SUCCEEDED') {
+                    return document;
+                }
+                if (document.status === 'FAILED') {
+                    throw new Error(document.statusMessage || 'The document processor failed to extract the PDF.');
+                }
+                showLoading('Processing PDF... (' + String(attempt + 1) + ')');
+                await sleep(1500);
+            }
+            throw new Error('The document processor did not finish extracting the PDF in time.');
+        }
+
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', uploadAndPopulateLossRun);
+        }
+
+        syncPolicyListTip();
+
+        function hasInsuranceHistoryInformation() {
+            const policies = Array.from(policyList.querySelectorAll('.policy-entry'));
+            if (policies.length === 0) return false;
+
+            return policies.some(policy => {
+                const policyIndex = Number(policy.dataset.policyIndex);
+
+                const policyFields = [
+                    ['effectiveDate', policy.querySelector('[name="policies[' + policyIndex + '][effectiveDate]"]')],
+                    ['expirationDate', policy.querySelector('[name="policies[' + policyIndex + '][expirationDate]"]')],
+                    ['insurer', policy.querySelector('[name="policies[' + policyIndex + '][insurer]"]')],
+                    ['premium', policy.querySelector('[name="policies[' + policyIndex + '][premium]"]')],
+                    ['policyNumber', policy.querySelector('[name="policies[' + policyIndex + '][policyNumber]"]')]
+                ];
+
+                if (policyFields.some(([fieldName, field]) => field && field.value && field.value.trim() !== '')) {
+                    return true;
+                }
+
+                if (policy.querySelector('[name="policies[' + policyIndex + '][linesOfCoverage][]"]:checked')) {
+                    return true;
+                }
+
+                const claims = Array.from(policy.querySelectorAll('.claim-entry'));
+                return claims.some(claim => {
+                    const claimIndex = Number(claim.dataset.claimIndex);
+                    const claimFields = [
+                        claim.querySelector('[name="policies[' + policyIndex + '][claims][' + claimIndex + '][incidentDate]"]'),
+                        claim.querySelector('[name="policies[' + policyIndex + '][claims][' + claimIndex + '][incurred]"]'),
+                        claim.querySelector('[name="policies[' + policyIndex + '][claims][' + claimIndex + '][alae]"]'),
+                        claim.querySelector('[name="policies[' + policyIndex + '][claims][' + claimIndex + '][paid]"]'),
+                        claim.querySelector('[name="policies[' + policyIndex + '][claims][' + claimIndex + '][reserved]"]'),
+                        claim.querySelector('[name="policies[' + policyIndex + '][claims][' + claimIndex + '][recovered]"]'),
+                        claim.querySelector('[name="policies[' + policyIndex + '][claims][' + claimIndex + '][details]"]')
+                    ];
+
+                    return claimFields.some(field => field && field.value && field.value.trim() !== '');
+                });
+            });
+        }
+
+        function syncInsuranceHistoryVisibility() {
+            const summaryTable = document.getElementById('insurance-history-summary-table');
+            const largeLossList = document.getElementById('large-losses-list');
+            const summaryPanel = document.getElementById('insurance-history-summary-panel');
+            const largeLossPanel = document.getElementById('large-losses');
+            const tipInsurance = document.getElementById('tip-for-insurance-history');
+            const tipLarge = document.getElementById('tip-for-large-losses');
+            const hasHistory = hasInsuranceHistoryInformation();
+
+            if (tipInsurance) tipInsurance.style.display = 'block';
+            if (tipLarge) tipLarge.style.display = 'block';
+            if (summaryTable) summaryTable.style.display = hasHistory ? 'table' : 'none';
+            if (largeLossList) largeLossList.style.display = hasHistory ? 'block' : 'none';
+
+            if (summaryPanel) {
+                summaryPanel.classList.toggle('faded', !hasHistory);
+            }
+            if (largeLossPanel) {
+                largeLossPanel.classList.toggle('faded', !hasHistory);
+            }
+        }
+
+        function renderLargeLossesSection() {
+            const list = document.getElementById('large-losses-list');
+            if (!list) return;
+
+            const policies = Array.from(policyList.querySelectorAll('.policy-entry'));
+            const rows = [];
+
+            policies.forEach(policy => {
+                const policyIndex = Number(policy.dataset.policyIndex);
+                const effectiveField = policy.querySelector('[name="policies[' + policyIndex + '][effectiveDate]"]');
+                const insurerField = policy.querySelector('[name="policies[' + policyIndex + '][insurer]"]');
+                const policyYear = effectiveField && effectiveField.value ? Number(effectiveField.value.slice(0, 4)) : '—';
+                const insurer = insurerField && insurerField.value.trim() ? insurerField.value.trim() : '—';
+                const claims = Array.from(policy.querySelectorAll('.claim-entry'));
+
+                claims.forEach(claim => {
+                    const claimIndex = Number(claim.dataset.claimIndex);
+                    const incidentField = claim.querySelector('[name="policies[' + policyIndex + '][claims][' + claimIndex + '][incidentDate]"]');
+                    const statusField = claim.querySelector('[name="policies[' + policyIndex + '][claims][' + claimIndex + '][status]"]');
+                    const incurredField = claim.querySelector('[name="policies[' + policyIndex + '][claims][' + claimIndex + '][incurred]"]');
+                    const detailsField = claim.querySelector('[name="policies[' + policyIndex + '][claims][' + claimIndex + '][details]"]');
+
+                    const incurred = readMoney(incurredField?.value || '0');
+                    if (incurred < 25000) return;
+
+                    rows.push({
+                        policyIndex,
+                        claimIndex,
+                        policyYear,
+                        insurer,
+                        incidentDate: incidentField?.value || '—',
+                        status: statusField?.value || 'open',
+                        incurred: formatMoney(incurred),
+                        details: detailsField?.value || ''
+                    });
+                });
+            });
+
+            if (rows.length === 0) {
+                list.innerHTML = '<p class="large-losses-empty">No large losses with incurred amounts greater than $25,000 entered above.</p>';
+                syncInsuranceHistoryVisibility();
+                return;
+            }
+
+            list.innerHTML = rows.map(row => `
+                <div class="large-loss-entry form-entry">
+                    <div class="large-loss-entry-grid">
+                        <div class="large-loss-field form-field">
+                            <label>Policy Year</label>
+                            <input type="text" value="${escapeHtml(row.policyYear)}" readonly>
+                        </div>
+                        <div class="large-loss-field form-field">
+                            <label>Insurer</label>
+                            <input type="text" value="${escapeHtml(row.insurer)}" readonly>
+                        </div>
+                        <div class="large-loss-field form-field">
+                            <label>Incident Date</label>
+                            <input type="text" value="${escapeHtml(row.incidentDate)}" readonly>
+                        </div>
+                        <div class="large-loss-field form-field">
+                            <label>Status</label>
+                            <input type="text" value="${escapeHtml(row.status)}" readonly>
+                        </div>
+                        <div class="large-loss-field form-field">
+                            <label>Incurred</label>
+                            <input type="text" value="${escapeHtml(row.incurred)}" readonly>
+                        </div>
+                        <div class="large-loss-field form-field large-loss-details">
+                            <label>Details</label>
+                            <textarea class="large-loss-detail-textarea" rows="5" aria-label="Details" data-policy-index="${row.policyIndex}" data-claim-index="${row.claimIndex}">${escapeHtml(row.details)}</textarea>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            syncInsuranceHistoryVisibility();
+        }
+
+        function renderInsuranceHistorySummaryTable() {
+            const summaryBody = document.getElementById('insurance-history-summary-body');
+            if (!summaryBody) return;
+
+            const policies = Array.from(policyList.querySelectorAll('.policy-entry'));
+            const aggregateByYear = new Map();
+
+            policies.forEach(policy => {
+                const policyIndex = Number(policy.dataset.policyIndex);
+                const effectiveField = policy.querySelector('[name="policies[' + policyIndex + '][effectiveDate]"]');
+                const insurerField = policy.querySelector('[name="policies[' + policyIndex + '][insurer]"]');
+                const lines = Array.from(policy.querySelectorAll('[name="policies[' + policyIndex + '][linesOfCoverage][]"]:checked')).map(item => item.value);
+                const claims = Array.from(policy.querySelectorAll('.claim-entry'));
+
+                const effectiveYear = effectiveField && effectiveField.value ? Number(effectiveField.value.slice(0, 4)) : null;
+                if (!effectiveYear) return;
+
+                const row = aggregateByYear.get(effectiveYear) || {
+                    policyYear: effectiveYear,
+                    insurers: new Set(),
+                    coverageLines: new Set(),
+                    claimCount: 0,
+                    openClaimCount: 0,
+                    totalPaid: 0,
+                    totalReserve: 0,
+                    totalIncurred: 0
+                };
+
+                if (insurerField && insurerField.value.trim()) {
+                    row.insurers.add(insurerField.value.trim());
+                }
+
+                lines.forEach(line => row.coverageLines.add(line));
+
+                claims.forEach(claim => {
+                    const statusField = claim.querySelector('[name$="][status]"]');
+                    const paidField = claim.querySelector('[name$="][paid]"]');
+                    const reserveField = claim.querySelector('[name$="][reserved]"]');
+                    const incurredField = claim.querySelector('[name$="][incurred]"]');
+
+                    const paid = readMoney(paidField?.value);
+                    const reserved = readMoney(reserveField?.value);
+                    const incurred = readMoney(incurredField?.value) || (paid + reserved);
+                    const status = statusField?.value || 'open';
+
+                    row.claimCount += 1;
+                    if (status === 'open') row.openClaimCount += 1;
+                    row.totalPaid += paid;
+                    row.totalReserve += reserved;
+                    row.totalIncurred += incurred;
+                });
+
+                aggregateByYear.set(effectiveYear, row);
+            });
+
+            const rows = Array.from(aggregateByYear.values()).sort((a, b) => b.policyYear - a.policyYear);
+            if (rows.length === 0) {
+                summaryBody.innerHTML = '';
+                syncInsuranceHistoryVisibility();
+                return;
+            }
+
+            summaryBody.innerHTML = rows.map(row => `
+                <tr>
+                    <td>${row.policyYear}</td>
+                    <td>${Array.from(row.insurers).join(', ') || '—'}</td>
+                    <td>${Array.from(row.coverageLines).join(', ') || '—'}</td>
+                    <td>${row.claimCount}</td>
+                    <td>${row.openClaimCount}</td>
+                    <td>${formatMoney(row.totalPaid)}</td>
+                    <td>${formatMoney(row.totalReserve)}</td>
+                    <td>${formatMoney(row.totalIncurred)}</td>
+                </tr>
+            `).join('');
+
+            syncInsuranceHistoryVisibility();
+        }
+
+        addPolicyButton.addEventListener('click', addPolicy);
+
+        continueButton.addEventListener('click', function() {
+            if (!hasInsuranceHistoryInformation()) {
+                return window.confirm('You have not entered any insurance history information. Are you sure you wish to continue?');
+            }
+        });
+
+        const largeLossesList = document.getElementById('large-losses-list');
+
+        policyList.addEventListener('change', function(event) {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+
+            const policy = target.closest('.policy-entry');
+            if (!policy) return;
+
+            if (target.matches('input[type="date"][name$="][effectiveDate]"]')) {
+                const effectiveDate = target.value;
+                const expirationField = policy.querySelector('[name="policies[' + Number(policy.dataset.policyIndex) + '][expirationDate]"]');
+                if (effectiveDate && !expirationField.value) {
+                    expirationField.value = addYearsToDate(effectiveDate, 1);
+                }
+            }
+
+            updatePolicyTitle(policy);
+            syncPolicyActionButtons(policy);
+            renderInsuranceHistorySummaryTable();
+            renderLargeLossesSection();
+        });
+
+        policyList.addEventListener('input', function(event) {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+            if (!target.closest('.policy-entry')) return;
+
+            const policy = target.closest('.policy-entry');
+            if (!policy) return;
+
+            const policyIndex = Number(policy.dataset.policyIndex);
+            const claim = target.closest('.claim-entry');
+            const detailsField = target.matches('input[name$="][details]"]');
+
+            if (detailsField && claim) {
+                const claimIndex = Number(claim.dataset.claimIndex);
+                const largeDetail = largeLossesList.querySelector('[data-policy-index="' + policyIndex + '"][data-claim-index="' + claimIndex + '"]');
+                if (largeDetail) largeDetail.value = target.value;
+            }
+
+            updatePolicyTitle(policy);
+            syncPolicyActionButtons(policy);
+            renderInsuranceHistorySummaryTable();
+        });
+
+        largeLossesList.addEventListener('input', function(event) {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+            if (!target.matches('textarea.large-loss-detail-textarea')) return;
+
+            const policyIndex = Number(target.dataset.policyIndex);
+            const claimIndex = Number(target.dataset.claimIndex);
+            const policy = policyList.querySelector('[data-policy-index="' + policyIndex + '"]');
+            if (!policy) return;
+
+            const detailField = policy.querySelector('[name="policies[' + policyIndex + '][claims][' + claimIndex + '][details]"]');
+            if (!detailField) return;
+
+            detailField.value = target.value;
+        });
+
+        policyList.addEventListener('click', function(event) {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+
+            const policy = target.closest('.policy-entry');
+            if (!policy) return;
+
+            const claimsForm = policy.querySelector('.claims-form');
+            const addClaimsButton = policy.querySelector('.add-claims-button');
+            const claimList = policy.querySelector('.claim-list');
+            const policyIndex = Number(policy.dataset.policyIndex);
+
+            const countClaims = () => {
+                return Array.from(claimList.children).filter(child => child.classList.contains('claim-entry')).length;
+            };
+
+            const addClaim = () => {
+                ensureClaimHeader(claimList);
+                const claimIndex = Array.from(claimList.children).filter(child => child.classList.contains('claim-entry')).length;
+                const newClaim = createClaimEntry(policyIndex, claimIndex);
+                claimList.appendChild(newClaim);
+            };
+
+            const updateClaimsVisibilityAfterRemove = () => {
+                const remainingClaims = claimList.querySelectorAll('.claim-entry').length;
+                if (remainingClaims === 0) {
+                    addClaimsButton.style.display = '';
+                    claimsForm.style.display = 'none';
+                    claimsForm.querySelector('.claims-form-footer').style.display = 'none';
+                }
+            };
+
+            if (target.closest('.selectBox')) {
+                toggleCoverageDropdown(target.closest('.selectBox'));
+                return;
+            }
+
+            if (target.closest('.checkboxes') && target.matches('input[type="checkbox"]')) {
+                syncCoverageSelect(policy);
+                return;
+            }
+
+            if (target.classList.contains('add-claims-button')) {
+                claimsForm.style.display = 'block';
+                addClaim();
+                ensureClaimHeader(claimList);
+                const claimEntriesCount = countClaims();
+                setAddClaimsButtonLabel(addClaimsButton, claimEntriesCount === 0 ? 'Add claim' : 'Add another claim');
+                renderInsuranceHistorySummaryTable();
+                renderLargeLossesSection();
+                return;
+            }
+
+            if (target.classList.contains('remove-claim')) {
+                target.closest('.claim-entry').remove();
+                if (countClaims() === 0) {
+                    setAddClaimsButtonLabel(addClaimsButton, 'Add claim');
+                    claimsForm.style.display = 'none';
+                } else {
+                    setAddClaimsButtonLabel(addClaimsButton, 'Add another claim');
+                }
+                renderInsuranceHistorySummaryTable();
+                renderLargeLossesSection();
+                return;
+            }
+
+            if (target.classList.contains('remove-policy')) {
+                policy.remove();
+                syncAddPolicyButtonLabel();
+                renderInsuranceHistorySummaryTable();
+                renderLargeLossesSection();
+                return;
+            }
+
+            if (target.classList.contains('add-prior-policy')) {
+                addPriorPolicy(policy);
+            } else if (target.classList.contains('add-renewal-policy')) {
+                addRenewalPolicy(policy);
+            }
+        });
+
+        window.addEventListener('click', function(event) {
+            const clickedInside = event.target.closest('.multiselect');
+            if (!clickedInside) {
+                document.querySelectorAll('.checkboxes').forEach(item => item.classList.remove('open'));
+            }
+        });
+
+
+        const seedPolicies = [
+            { effectiveDate: '2022-01-01', expirationDate: '2023-01-01', insurer: 'Alpha Insurer', premium: '1200', policyNumber: 'ALPHA-01', coverageLines: ['Auto Liability', 'General Liability'], claims: [
+                { incidentDate: '2022-06-10', status: 'open', incurred: '15000', alae: '500', paid: '10000', reserved: '5000', recovered: '0', details: 'Small auto liability claim' },
+                { incidentDate: '2022-10-11', status: 'closed', incurred: '26000', alae: '1000', paid: '26000', reserved: '0', recovered: '0', details: 'Large auto liability claim' }
+            ] },
+            { effectiveDate: '2023-01-01', expirationDate: '2024-01-01', insurer: 'Beta Insurer', premium: '1400', policyNumber: 'BETA-01', coverageLines: ['Auto Physical Damage'], claims: [
+                { incidentDate: '2023-02-05', status: 'open', incurred: '5000', alae: '200', paid: '0', reserved: '5000', recovered: '0', details: 'Small physical damage claim' },
+                { incidentDate: '2023-11-22', status: 'open', incurred: '30000', alae: '1200', paid: '15000', reserved: '15000', recovered: '0', details: 'Large physical damage claim' }
+            ] },
+            { effectiveDate: '2024-01-01', expirationDate: '2025-01-01', insurer: 'Gamma Insurer', premium: '1600', policyNumber: 'GAMMA-01', coverageLines: ['General Liability'], claims: [
+                { incidentDate: '2024-04-14', status: 'closed', incurred: '18000', alae: '600', paid: '18000', reserved: '0', recovered: '1000', details: 'Small GL claim' }
+            ] },
+            { effectiveDate: '2025-01-01', expirationDate: '2026-01-01', insurer: 'Delta Insurer', premium: '1800', policyNumber: 'DELTA-01', coverageLines: ['Auto Liability', 'Auto Physical Damage'], claims: [
+                { incidentDate: '2025-03-12', status: 'open', incurred: '40000', alae: '2000', paid: '15000', reserved: '25000', recovered: '0', details: 'Large multi-line claim' }
+            ] }
+        ];
+
+        function seedTestData() {
+            policyList.innerHTML = '';
+            policyNumber = 0;
+            seedPolicies.forEach((data, index) => {
+                const policy = createPolicyEntry(index, data);
+                policyList.appendChild(policy);
+                syncPolicyActionButtons(policy);
+                const policyIndex = Number(policy.dataset.policyIndex);
+                const lines = Array.from(policy.querySelectorAll('[name="policies[' + policyIndex + '][linesOfCoverage][]"]'));
+                lines.forEach(line => {
+                    if (data.coverageLines.includes(line.value)) line.checked = true;
+                });
+
+                data.claims.forEach((claimData, claimIndex) => {
+                    const claim = createClaimEntry(policyIndex, claimIndex, claimData);
+                    const claimList = policy.querySelector('.claim-list');
+                    ensureClaimHeader(claimList);
+                    claimList.appendChild(claim);
+                });
+
+                syncCoverageSelect(policy);
+                policyNumber += 1;
+            });
+            renderInsuranceHistorySummaryTable();
+            renderLargeLossesSection();
+            syncInsuranceHistoryVisibility();
+        }
+        // Test data seeding is disabled by default. Upload the loss run PDF instead.
+
+    </script>
+</body>
+
+</html>
