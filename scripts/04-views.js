@@ -1,87 +1,122 @@
-        // Derived insurance history views
-        function hasValue(field) {
-            return Boolean(field && field.value && field.value.trim());
-        }
+// Derived insurance history views
+function hasValue(field) {
+  return Boolean(field && field.value && field.value.trim());
+}
 
-        function hasInsuranceHistoryInformation() {
-            const policyFieldNames = ['effectiveDate', 'expirationDate', 'insurer', 'premium', 'policyNumber'];
-            const claimFieldNames = ['incidentDate', 'incurred', 'alae', 'paid', 'reserved', 'recovered', 'details'];
+function hasInsuranceHistoryInformation() {
+  const policyFieldNames = [
+    "effectiveDate",
+    "expirationDate",
+    "insurer",
+    "premium",
+    "policyNumber",
+  ];
+  const claimFieldNames = [
+    "incidentDate",
+    "incurred",
+    "alae",
+    "paid",
+    "reserved",
+    "recovered",
+    "details",
+  ];
 
-            return getPolicies().some(policy => {
-                if (policyFieldNames.some(fieldName => hasValue(getPolicyField(policy, fieldName)))) return true;
-                if (getCoverageInputs(policy, true).length > 0) return true;
+  return getPolicies().some((policy) => {
+    if (
+      policyFieldNames.some((fieldName) =>
+        hasValue(getPolicyField(policy, fieldName)),
+      )
+    )
+      return true;
+    if (getCoverageInputs(policy, true).length > 0) return true;
 
-                const policyIndex = getPolicyIndex(policy);
-                return getClaims(policy).some(claim => {
-                    return claimFieldNames.some(fieldName => hasValue(getClaimField(policyIndex, claim, fieldName)));
-                });
-            });
-        }
+    const policyIndex = getPolicyIndex(policy);
+    return getClaims(policy).some((claim) => {
+      return claimFieldNames.some((fieldName) =>
+        hasValue(getClaimField(policyIndex, claim, fieldName)),
+      );
+    });
+  });
+}
 
-        function syncInsuranceHistoryVisibility() {
-            const summaryTable = document.getElementById('insurance-history-summary-table');
-            const largeLossList = document.getElementById('large-losses-list');
-            const summaryPanel = document.getElementById('insurance-history-summary-panel');
-            const largeLossPanel = document.getElementById('large-losses');
-            const tipInsurance = document.getElementById('tip-for-insurance-history');
-            const tipLarge = document.getElementById('tip-for-large-losses');
-            const hasHistory = hasInsuranceHistoryInformation();
+function syncInsuranceHistoryVisibility() {
+  const summaryTable = document.getElementById(
+    "insurance-history-summary-table",
+  );
+  const largeLossList = document.getElementById("large-losses-list");
+  const summaryPanel = document.getElementById(
+    "insurance-history-summary-panel",
+  );
+  const largeLossPanel = document.getElementById("large-losses");
+  const tipInsurance = document.getElementById("tip-for-insurance-history");
+  const tipLarge = document.getElementById("tip-for-large-losses");
+  const hasHistory = hasInsuranceHistoryInformation();
 
-            if (tipInsurance) tipInsurance.style.display = 'block';
-            if (tipLarge) tipLarge.style.display = hasHistory ? 'none' : 'block';
-            if (summaryTable) summaryTable.style.display = hasHistory ? 'table' : 'none';
-            if (largeLossList) largeLossList.style.display = hasHistory ? 'block' : 'none';
+  if (tipInsurance) tipInsurance.style.display = "block";
+  if (tipLarge) tipLarge.style.display = hasHistory ? "none" : "block";
+  if (summaryTable) summaryTable.style.display = hasHistory ? "table" : "none";
+  if (largeLossList)
+    largeLossList.style.display = hasHistory ? "block" : "none";
 
-            if (summaryPanel) {
-                summaryPanel.classList.toggle('faded', !hasHistory);
-            }
-            if (largeLossPanel) {
-                largeLossPanel.classList.toggle('faded', !hasHistory);
-            }
-        }
+  if (summaryPanel) {
+    summaryPanel.classList.toggle("faded", !hasHistory);
+  }
+  if (largeLossPanel) {
+    largeLossPanel.classList.toggle("faded", !hasHistory);
+  }
+}
 
-        function renderLargeLossesSection() {
-            const list = document.getElementById('large-losses-list');
-            if (!list) return;
+function renderLargeLossesSection() {
+  const list = document.getElementById("large-losses-list");
+  if (!list) return;
 
-            const rows = [];
+  const rows = [];
 
-            getPolicies().forEach(policy => {
-                const policyIndex = getPolicyIndex(policy);
-                const effectiveField = getPolicyField(policy, 'effectiveDate');
-                const insurerField = getPolicyField(policy, 'insurer');
-                const policyYear = effectiveField && effectiveField.value ? Number(effectiveField.value.slice(0, 4)) : '—';
-                const insurer = insurerField && insurerField.value.trim() ? insurerField.value.trim() : '—';
+  getPolicies().forEach((policy) => {
+    const policyIndex = getPolicyIndex(policy);
+    const effectiveField = getPolicyField(policy, "effectiveDate");
+    const insurerField = getPolicyField(policy, "insurer");
+    const policyYear =
+      effectiveField && effectiveField.value
+        ? Number(effectiveField.value.slice(0, 4))
+        : "—";
+    const insurer =
+      insurerField && insurerField.value.trim()
+        ? insurerField.value.trim()
+        : "—";
 
-                getClaims(policy).forEach(claim => {
-                    const claimIndex = Number(claim.dataset.claimIndex);
-                    const incidentField = getClaimField(policyIndex, claim, 'incidentDate');
-                    const statusField = getClaimField(policyIndex, claim, 'status');
-                    const incurredField = getClaimField(policyIndex, claim, 'incurred');
-                    const detailsField = getClaimField(policyIndex, claim, 'details');
+    getClaims(policy).forEach((claim) => {
+      const claimIndex = Number(claim.dataset.claimIndex);
+      const incidentField = getClaimField(policyIndex, claim, "incidentDate");
+      const statusField = getClaimField(policyIndex, claim, "status");
+      const incurredField = getClaimField(policyIndex, claim, "incurred");
+      const detailsField = getClaimField(policyIndex, claim, "details");
 
-                    const incurred = readMoney(incurredField?.value || '0');
-                    if (incurred < APP_CONFIG.largeLossThreshold) return;
+      const incurred = readMoney(incurredField?.value || "0");
+      if (incurred < APP_CONFIG.largeLossThreshold) return;
 
-                    rows.push({
-                        policyIndex,
-                        claimIndex,
-                        policyYear,
-                        insurer,
-                        incidentDate: incidentField?.value || '—',
-                        status: statusField?.value || 'open',
-                        incurred: formatMoney(incurred),
-                        details: detailsField?.value || ''
-                    });
-                });
-            });
+      rows.push({
+        policyIndex,
+        claimIndex,
+        policyYear,
+        insurer,
+        incidentDate: incidentField?.value || "—",
+        status: statusField?.value || "open",
+        incurred: formatMoney(incurred),
+        details: detailsField?.value || "",
+      });
+    });
+  });
 
-            if (rows.length === 0) {
-                list.innerHTML = '<p class="large-losses-empty">No large losses with incurred amounts of at least $25,000 entered above.</p>';
-                return;
-            }
+  if (rows.length === 0) {
+    list.innerHTML =
+      '<p class="large-losses-empty">No large losses with incurred amounts of at least $25,000 entered above.</p>';
+    return;
+  }
 
-            list.innerHTML = rows.map(row => `
+  list.innerHTML = rows
+    .map(
+      (row) => `
                 <article class="large-loss-entry form-entry">
                     <dl class="large-loss-entry-grid">
                         <div class="large-loss-field form-field">
@@ -110,79 +145,89 @@
                         </div>
                     </dl>
                 </article>
-            `).join('');
-        }
+            `,
+    )
+    .join("");
+}
 
-        function renderInsuranceHistorySummaryTable() {
-            const summaryBody = document.getElementById('insurance-history-summary-body');
-            if (!summaryBody) return;
+function renderInsuranceHistorySummaryTable() {
+  const summaryBody = document.getElementById("insurance-history-summary-body");
+  if (!summaryBody) return;
 
-            const aggregateByYear = new Map();
+  const aggregateByYear = new Map();
 
-            getPolicies().forEach(policy => {
-                const effectiveField = getPolicyField(policy, 'effectiveDate');
-                const insurerField = getPolicyField(policy, 'insurer');
-                const lines = getCoverageInputs(policy, true).map(item => item.value);
-                const claims = getClaims(policy);
+  getPolicies().forEach((policy) => {
+    const effectiveField = getPolicyField(policy, "effectiveDate");
+    const insurerField = getPolicyField(policy, "insurer");
+    const lines = getCoverageInputs(policy, true).map((item) => item.value);
+    const claims = getClaims(policy);
 
-                const effectiveYear = effectiveField && effectiveField.value ? Number(effectiveField.value.slice(0, 4)) : null;
-                if (!effectiveYear) return;
+    const effectiveYear =
+      effectiveField && effectiveField.value
+        ? Number(effectiveField.value.slice(0, 4))
+        : null;
+    if (!effectiveYear) return;
 
-                const row = aggregateByYear.get(effectiveYear) || {
-                    policyYear: effectiveYear,
-                    insurers: new Set(),
-                    coverageLines: new Set(),
-                    claimCount: 0,
-                    openClaimCount: 0,
-                    totalPaid: 0,
-                    totalReserve: 0,
-                    totalIncurred: 0
-                };
+    const row = aggregateByYear.get(effectiveYear) || {
+      policyYear: effectiveYear,
+      insurers: new Set(),
+      coverageLines: new Set(),
+      claimCount: 0,
+      openClaimCount: 0,
+      totalPaid: 0,
+      totalReserve: 0,
+      totalIncurred: 0,
+    };
 
-                if (insurerField && insurerField.value.trim()) {
-                    row.insurers.add(insurerField.value.trim());
-                }
+    if (insurerField && insurerField.value.trim()) {
+      row.insurers.add(insurerField.value.trim());
+    }
 
-                lines.forEach(line => row.coverageLines.add(line));
+    lines.forEach((line) => row.coverageLines.add(line));
 
-                claims.forEach(claim => {
-                    const statusField = claim.querySelector('[name$="][status]"]');
-                    const paidField = claim.querySelector('[name$="][paid]"]');
-                    const reserveField = claim.querySelector('[name$="][reserved]"]');
-                    const incurredField = claim.querySelector('[name$="][incurred]"]');
+    claims.forEach((claim) => {
+      const statusField = claim.querySelector('[name$="][status]"]');
+      const paidField = claim.querySelector('[name$="][paid]"]');
+      const reserveField = claim.querySelector('[name$="][reserved]"]');
+      const incurredField = claim.querySelector('[name$="][incurred]"]');
 
-                    const paid = readMoney(paidField?.value);
-                    const reserved = readMoney(reserveField?.value);
-                    const incurred = readMoney(incurredField?.value) || (paid + reserved);
-                    const status = statusField?.value || 'open';
+      const paid = readMoney(paidField?.value);
+      const reserved = readMoney(reserveField?.value);
+      const incurred = readMoney(incurredField?.value) || paid + reserved;
+      const status = statusField?.value || "open";
 
-                    row.claimCount += 1;
-                    if (status === 'open') row.openClaimCount += 1;
-                    row.totalPaid += paid;
-                    row.totalReserve += reserved;
-                    row.totalIncurred += incurred;
-                });
+      row.claimCount += 1;
+      if (status === "open") row.openClaimCount += 1;
+      row.totalPaid += paid;
+      row.totalReserve += reserved;
+      row.totalIncurred += incurred;
+    });
 
-                aggregateByYear.set(effectiveYear, row);
-            });
+    aggregateByYear.set(effectiveYear, row);
+  });
 
-            const rows = Array.from(aggregateByYear.values()).sort((a, b) => b.policyYear - a.policyYear);
-            if (rows.length === 0) {
-                summaryBody.innerHTML = '';
-                return;
-            }
+  const rows = Array.from(aggregateByYear.values()).sort(
+    (a, b) => b.policyYear - a.policyYear,
+  );
+  if (rows.length === 0) {
+    summaryBody.innerHTML = "";
+    return;
+  }
 
-            summaryBody.innerHTML = rows.map(row => `
+  summaryBody.innerHTML = rows
+    .map(
+      (row) => `
                 <tr>
                     <td>${row.policyYear}</td>
-                    <td>${escapeHtml(Array.from(row.insurers).join(', ') || '—')}</td>
-                    <td>${escapeHtml(Array.from(row.coverageLines).join(', ') || '—')}</td>
+                    <td>${escapeHtml(Array.from(row.insurers).join(", ") || "—")}</td>
+                    <td>${escapeHtml(Array.from(row.coverageLines).join(", ") || "—")}</td>
                     <td>${row.claimCount}</td>
                     <td>${row.openClaimCount}</td>
                     <td>${formatMoney(row.totalPaid)}</td>
                     <td>${formatMoney(row.totalReserve)}</td>
                     <td>${formatMoney(row.totalIncurred)}</td>
                 </tr>
-            `).join('');
-        }
-
+            `,
+    )
+    .join("");
+}

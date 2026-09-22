@@ -56,8 +56,26 @@
                     <tbody id="uploaded-files-body"></tbody>
                 </table>
             </div>
-            <iframe id="file-preview" class="column"></iframe>
+            <div class="file-preview-column column">
+                <div class="file-preview-toolbar">
+                    <span class="visually-hidden" id="file-preview-label">Loss run file preview</span>
+                    <button type="button" id="maximize-preview" class="button preview-button" aria-label="Open file preview full screen" title="Open file preview full screen" hidden>
+                        <i class="fa-solid fa-expand" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <iframe id="file-preview" title="Loss run file preview"></iframe>
+            </div>
         </section>
+
+        <dialog id="file-preview-modal" class="file-preview-modal" aria-labelledby="file-preview-modal-title">
+            <div class="file-preview-modal-header">
+                <h2 id="file-preview-modal-title">Loss run file preview</h2>
+                <button type="button" id="close-preview" class="button preview-button" aria-label="Close file preview" title="Close file preview">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+            <iframe id="file-preview-modal-frame" title="Loss run file preview"></iframe>
+        </dialog>
 
         <form id="insurance-history-form" method="post" action="/submit" aria-labelledby="insurance-history-title">
             <input type="hidden" name="lossRunData" value="" />

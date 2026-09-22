@@ -187,6 +187,21 @@ test.describe('insurance history form', () => {
         await expect(page.locator('#file-preview')).toHaveAttribute('src', /^blob:/);
     });
 
+    test('opens and closes the full-size file preview modal', async ({ page }) => {
+        await expect(page.locator('#maximize-preview')).toBeHidden();
+        await uploadSampleFiles(page);
+
+        await page.locator('#uploaded-files tbody tr').first().click();
+        await expect(page.locator('#maximize-preview')).toBeVisible();
+        await page.locator('#maximize-preview').click();
+
+        await expect(page.locator('#file-preview-modal')).toBeVisible();
+        await expect(page.locator('#file-preview-modal-frame')).toHaveAttribute('src', /^blob:/);
+
+        await page.locator('#close-preview').click();
+        await expect(page.locator('#file-preview-modal')).not.toBeVisible();
+    });
+
     test('supports manual policy and claim entry with derived views', async ({ page }) => {
         await page.locator('#add-policy').click();
         const policy = page.locator('.policy-entry').first();
