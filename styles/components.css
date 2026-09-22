@@ -1,0 +1,578 @@
+        .panel,
+        #insurance-history-form {
+            max-width: var(--content-width);
+            margin-inline: auto;
+            padding: var(--space-2xl);
+            background: var(--color-surface);
+            box-shadow: var(--shadow-panel);
+        }
+
+        #insurance-history-form {
+            margin-block: 0;
+        }
+
+        .panel-title {
+            margin: 0 0 var(--space-xl);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-text-strong);
+        }
+
+        .policy-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        .panel {
+            margin-block: var(--space-2xl);
+        }
+
+        .panel.faded {
+            opacity: 0.5;
+        }
+
+        .panel .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: var(--space-lg);
+            font-size: 0.95rem;
+        }
+
+        .table-scroll,
+        .claims-form {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .panel .summary-table th,
+        .panel .summary-table td {
+            border: 1px solid var(--color-border);
+            padding: 0.7rem 0.8rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .panel .summary-table th {
+            background: var(--color-table-heading);
+            color: var(--color-text);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.82rem;
+        }
+
+        .panel .summary-table td {
+            background: var(--color-surface);
+        }
+
+        #insurance-history-summary-table {
+            display: none;
+        }
+
+        #large-losses-list {
+            display: none;
+        }
+
+        .form-field input[type="text"][readonly],
+        .form-field input[type="date"][readonly],
+        .form-field textarea[readonly] {
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            padding: 0;
+            color: var(--color-text);
+            font: inherit;
+            min-height: auto;
+            height: auto;
+            outline: none;
+            cursor: default;
+        }
+
+        .large-loss-details {
+            grid-column: span 5;
+        }
+
+        .form-entry {
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            background: var(--color-surface-subtle);
+            padding: var(--space-lg);
+            position: relative;
+            min-width: 0;
+        }
+
+        .large-loss-entry {
+            margin-bottom: var(--space-lg);
+            box-shadow: var(--shadow-card);
+        }
+
+        .policy-entry-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .policy-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--color-text-strong);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: minmax(240px, 1.1fr) repeat(5, minmax(100px, 1fr));
+            gap: var(--space-lg);
+            align-items: end;
+        }
+
+        .large-loss-entry-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(100px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        .multiselect {
+            width: 100%;
+            position: relative;
+        }
+
+        .selectBox {
+            position: relative;
+            border: 1px solid var(--color-control-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-surface);
+            min-height: var(--control-height);
+            display: flex;
+            align-items: center;
+        }
+
+        .selectBox select {
+            width: 100%;
+            box-sizing: border-box;
+            min-height: var(--control-height);
+            border: none;
+            outline: none;
+            background: transparent;
+            font: inherit;
+            color: var(--color-text);
+            padding: 0.4rem 2rem 0.4rem 0.6rem;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .selectBox::after {
+            content: '';
+            border: solid var(--color-action-secondary);
+            border-width: 0 2px 2px 0;
+            display: inline-block;
+            padding: 3px;
+            transform: rotate(45deg);
+            position: absolute;
+            right: var(--space-lg);
+            top: calc(50% - var(--radius-sm));
+            pointer-events: none;
+        }
+
+        .overSelect {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            cursor: pointer;
+        }
+
+        .checkboxes {
+            display: none;
+            position: absolute;
+            z-index: 3;
+            background: var(--color-surface);
+            min-width: 100%;
+            border: 1px solid var(--color-control-border);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-menu);
+            padding: 0.4rem 0;
+        }
+
+        .checkboxes.open {
+            display: block;
+        }
+
+        .checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.9rem;
+            color: var(--color-text);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .checkboxes label:hover {
+            background: var(--color-hover);
+        }
+
+        .claims-form {
+            display: none;
+            width: 100%;
+            margin-top: var(--space-lg);
+            box-sizing: border-box;
+            border-top: 1px solid var(--color-border);
+            padding-top: var(--space-lg);
+        }
+
+        .claims-form.open {
+            display: block;
+        }
+
+        .claims-form-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .claims-form-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+
+        .claim-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .claim-table-header {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .claim-table-header .claim-action-header {
+            text-align: center;
+        }
+
+        .claim-table-header,
+        .claim-entry {
+            display: grid;
+            grid-template-columns: var(--claim-grid-columns);
+            gap: var(--space-sm);
+            align-items: center;
+            margin-left: 0;
+            margin-right: 0.6rem;
+            min-width: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        .claim-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            min-width: 0;
+        }
+
+        .claim-field label {
+            display: none;
+        }
+
+        .claim-field textarea,
+        .claim-field input[type="date"],
+        .claim-field input[type="text"],
+        .claim-field select {
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            height: var(--claim-control-height);
+            border: 1px solid var(--color-control-border);
+            border-radius: var(--radius-sm);
+            padding: 0.3rem 0.45rem;
+            font: inherit;
+            color: var(--color-text);
+            background: var(--color-surface);
+        }
+
+        .claim-remove {
+            background: var(--color-danger);
+            color: var(--color-surface);
+            width: var(--claim-action-width);
+            height: var(--claim-control-height);
+            padding: 0.25rem 0.4rem;
+            font-size: 1.0rem;
+            line-height: 1;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-field label,
+        .large-loss-field dt {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .large-loss-field dd {
+            margin: 0;
+        }
+
+        .form-field input[type="text"],
+        .form-field input[type="date"],
+        .form-field textarea {
+            width: 100%;
+            box-sizing: border-box;
+            height: var(--control-height);
+            border: 1px solid var(--color-control-border);
+            border-radius: var(--radius-sm);
+            padding: 0.4rem 0.6rem;
+            font: inherit;
+            color: var(--color-text);
+        }
+
+        .form-field textarea {
+            height: auto;
+        }
+
+        .form-field input[type="text"]::placeholder {
+            color: var(--color-placeholder);
+        }
+
+        .form-entry:has(.policy-actions) {
+            padding-bottom: 4rem;
+        }
+
+        .policy-actions {
+            display: flex;
+            gap: 0;
+            flex-wrap: nowrap;
+            align-items: stretch;
+            margin-top: 0;
+            justify-content: stretch;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            left: 0;
+            color: contrast-color(var(--color-surface-subtle));
+            background: var(--color-surface-subtle);
+            border-radius: 0 0 var(--radius-md) var(--radius-md);
+            overflow: hidden;
+        }
+
+        .policy-actions .button {
+            flex-grow: 1;
+            border-radius: 0;
+            padding: 0.45rem 0.7rem;
+            min-width: var(--policy-action-height);
+            font-size: 1rem;
+            border-left: 2px solid rgba(255, 255, 255, 0.25);
+            text-align: left;
+        }
+
+        .policy-actions .button:first-of-type {
+            border-left: none;
+        }
+
+        .file-upload-widget {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+        }
+
+        .uploaded-files {
+            width: 100%;
+            margin-top: var(--space-lg);
+            border-collapse: collapse;
+        }
+
+        .uploaded-files th,
+        .uploaded-files td {
+            padding: 0.6rem 0.75rem;
+            border: 1px solid var(--color-border);
+            text-align: left;
+        }
+
+        .uploaded-files th {
+            background: var(--color-table-heading);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+        }
+
+        .uploaded-files th button {
+            border: 0;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            font: inherit;
+            padding: 0;
+            text-align: left;
+            text-transform: inherit;
+        }
+
+        .uploaded-files tbody tr {
+            cursor: pointer;
+        }
+
+        .uploaded-files tbody tr:hover,
+        .uploaded-files tbody tr:focus {
+            background: var(--color-hover);
+            outline: none;
+        }
+
+        .file-picker {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--color-action-secondary);
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: var(--shadow-card);
+            transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+            background: var(--color-action);
+            color: var(--color-surface);
+            padding: 0.8rem 1.2rem;
+            margin-top: var(--space-lg);
+        }
+
+        .file-picker:hover {
+            box-shadow: var(--shadow-panel);
+        }
+
+        .file-picker input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-picker .file-picker-name {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .button {
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 0.65rem 0.95rem;
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 160ms ease, transform 160ms ease;
+        }
+
+        .button:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .policy-button {
+            background: var(--color-action-secondary);
+            color: contrast-color(var(--color-action-secondary));
+        }
+
+        .remove-button {
+            background: var(--color-danger);
+            color: contrast-color(var(--color-danger));
+        }
+
+        .page-loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(45, 45, 45, 0.45);
+            backdrop-filter: blur(1px);
+        }
+
+        .page-loading-card {
+            min-width: min(440px, calc(100vw - 2rem));
+            background: var(--color-surface);
+            color: var(--color-text-strong);
+            padding: 1.6rem 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-overlay-card);
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .upload-loading {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+            padding: 0.85rem 1rem;
+            border-radius: var(--radius-md);
+            background: var(--color-table-heading);
+            color: var(--color-text);
+            font-weight: 700;
+        }
+
+        .upload-spinner {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid var(--color-spinner-track);
+            border-top-color: var(--color-action);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .upload-error {
+            margin-top: var(--space-lg);
+            color: var(--color-error);
+            font-weight: 700;
+            background: var(--color-error-surface);
+            border-left: 4px solid var(--color-error);
+            padding: 0.75rem 1rem;
+        }
+
+        .add-policy-button {
+            background: var(--color-action);
+            color: var(--color-surface);
+            padding: 0.8rem 1.2rem;
+            margin-top: var(--space-lg);
+        }
+
+        .fa-solid {
+            font-size: 1.6em;
+            vertical-align: middle;
+            margin-right: 0.25em;
+            opacity: 0.75;
+        }
+
+        .remove-claim .fa-solid {
+            margin-right: 0;
+        }
+

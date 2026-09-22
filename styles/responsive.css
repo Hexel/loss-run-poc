@@ -1,0 +1,83 @@
+        @media (max-width: 900px) {
+
+            .form-row,
+            .large-loss-entry-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .large-loss-details,
+            .coverage-group,
+            .policy-number-field {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .coverage-group,
+            .policy-number-field {
+                grid-column: span 1;
+            }
+
+            .panel.double-panel {
+                width: auto;
+                margin-inline: var(--space-lg);
+                flex-direction: column;
+            }
+
+            .panel.double-panel .column {
+                width: auto;
+            }
+
+            .panel.double-panel .column.padded {
+                padding: var(--space-xl);
+            }
+        }
+
+        #finale {
+            max-width: calc(var(--content-width) + 4rem);
+            margin: 0 auto;
+        }
+
+        .continue-button {
+            margin-top: var(--space-lg);
+            padding: 0.8rem 1.2rem;
+            background: var(--color-action);
+            color: var(--color-surface);
+            font-size: 1.5rem;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .panel.double-panel {
+            width: var(--content-width);
+            padding: 0;
+            display: flex;
+            flex-direction: row;
+
+            .column {
+                width: 50%;
+                flex-grow: 1;
+            }
+
+            .column.padded {
+                padding: var(--space-2xl);
+            }
+        }
+
+        #file-preview {
+            background-color: grey;
+        }

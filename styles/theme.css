@@ -1,0 +1,53 @@
+
+        :root {
+            font-size: 12px;
+            --color-page: #f8f8f8;
+            --color-surface: #fff;
+            --color-surface-subtle: #fbfbfb;
+            --color-text: #3d3d3d;
+            --color-text-strong: #2a2a2a;
+            --color-text-muted: #666;
+            --color-border: #d8d8d8;
+            --color-control-border: #bcbcbc;
+            --color-action: #2c6b2f;
+            --color-action-secondary: #b4b4b4;
+            --color-danger: #a33c3c;
+            --color-error: #b92d2d;
+            --color-error-surface: #fff1f1;
+            --color-table-heading: #eef2f4;
+            --color-hover: #f2f2f2;
+            --color-placeholder: #999;
+            --color-spinner-track: #a3b5be;
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 0.75rem;
+            --space-lg: 1rem;
+            --space-xl: 1.5rem;
+            --space-2xl: 2rem;
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --control-height: 38px;
+            --claim-control-height: 32px;
+            --policy-action-height: 34px;
+            --claim-action-width: 36px;
+            --claim-grid-columns: minmax(10rem, 1.2fr) minmax(8rem, 0.8fr) repeat(5, minmax(8rem, 1fr)) minmax(14rem, 1.4fr) var(--claim-action-width);
+            --content-width: 1100px;
+            --shadow-panel: 0 1px 8px rgba(0, 0, 0, 0.08);
+            --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.06);
+            --shadow-menu: 0 3px 12px rgba(0, 0, 0, 0.12);
+            --shadow-overlay-card: 0 12px 30px rgba(0, 0, 0, 0.22);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--color-page);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--color-text);
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
