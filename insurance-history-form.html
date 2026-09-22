@@ -12,19 +12,87 @@
         License: none (public domain)
         */
 
-        html, body, div, span, applet, object, iframe,
-        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-        a, abbr, acronym, address, big, cite, code,
-        del, dfn, em, img, ins, kbd, q, s, samp,
-        small, strike, strong, sub, sup, tt, var,
-        b, u, i, center,
-        dl, dt, dd, ol, ul, li,
-        fieldset, form, label, legend,
-        table, caption, tbody, tfoot, thead, tr, th, td,
-        article, aside, canvas, details, embed,
-        figure, figcaption, footer, header, hgroup,
-        menu, nav, output, ruby, section, summary,
-        time, mark, audio, video {
+        html,
+        body,
+        div,
+        span,
+        applet,
+        object,
+        iframe,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        blockquote,
+        pre,
+        a,
+        abbr,
+        acronym,
+        address,
+        big,
+        cite,
+        code,
+        del,
+        dfn,
+        em,
+        img,
+        ins,
+        kbd,
+        q,
+        s,
+        samp,
+        small,
+        strike,
+        strong,
+        sub,
+        sup,
+        tt,
+        var,
+        b,
+        u,
+        i,
+        center,
+        dl,
+        dt,
+        dd,
+        ol,
+        ul,
+        li,
+        fieldset,
+        form,
+        label,
+        legend,
+        table,
+        caption,
+        tbody,
+        tfoot,
+        thead,
+        tr,
+        th,
+        td,
+        article,
+        aside,
+        canvas,
+        details,
+        embed,
+        figure,
+        figcaption,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        output,
+        ruby,
+        section,
+        summary,
+        time,
+        mark,
+        audio,
+        video {
             margin: 0;
             padding: 0;
             border: 0;
@@ -32,29 +100,49 @@
             font: inherit;
             vertical-align: baseline;
         }
+
         /* HTML5 display-role reset for older browsers */
-        article, aside, details, figcaption, figure,
-        footer, header, hgroup, menu, nav, section {
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        section {
             display: block;
         }
+
         body {
             line-height: 1;
         }
-        ol, ul {
+
+        ol,
+        ul {
             list-style: none;
         }
-        blockquote, q {
+
+        blockquote,
+        q {
             quotes: none;
         }
-        blockquote:before, blockquote:after,
-        q:before, q:after {
+
+        blockquote:before,
+        blockquote:after,
+        q:before,
+        q:after {
             content: '';
             content: none;
         }
+
         table {
             border-collapse: collapse;
             border-spacing: 0;
         }
+
         /***/
 
         :root {
@@ -648,6 +736,7 @@
         }
 
         @media (max-width: 900px) {
+
             .form-row,
             .large-loss-entry-grid {
                 grid-template-columns: 1fr 1fr;
@@ -664,6 +753,7 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
+
             .coverage-group,
             .policy-number-field {
                 grid-column: span 1;
@@ -694,6 +784,26 @@
             white-space: nowrap;
             border: 0;
         }
+
+        .panel.double-panel {
+            width: var(--content-width);
+            padding: 0;
+            display: flex;
+            flex-direction: row;
+
+            .column {
+                width: 50%;
+                flex-grow: 1;
+            }
+
+            .column.padded {
+                padding: var(--space-2xl);
+            }
+        }
+
+        #file-preview {
+            background-color: grey;
+        }
     </style>
 </head>
 
@@ -708,24 +818,28 @@
     <main>
         <h1 class="visually-hidden">Insurance History</h1>
 
-        <section id="upload-loss-run" class="panel" aria-labelledby="upload-loss-run-title">
-            <h2 id="upload-loss-run-title" class="panel-title">Upload Loss Run</h2>
-            <p>Have a loss run file? Use the button below to upload and automatically populate your insurance history.
-            </p>
-            <form id="loss-run-upload-form" method="post" action="/upload" enctype="multipart/form-data">
-                <div class="file-upload-widget">
-                    <label class="file-picker">
-                        <span class="file-picker-name"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i>
-                            <span id="file-name">Upload loss run file</span></span>
-                        <input type="file" name="lossRunFile" accept=".pdf" required />
-                    </label>
-                </div>
-            </form>
-            <output id="upload-loading" class="upload-loading" aria-live="polite" hidden>
-                <span class="upload-spinner" aria-hidden="true"></span>
-                <span id="upload-status-text">Uploading PDF...</span>
-            </output>
-            <p id="upload-error" class="upload-error" role="alert" hidden></p>
+        <section id="upload-loss-run" class="panel double-panel" aria-labelledby="upload-loss-run-title">
+            <div class="column padded">
+                <h2 id="upload-loss-run-title" class="panel-title">Upload Loss Run</h2>
+                <p>Have a loss run file? Use the button below to upload and automatically populate your insurance
+                    history.
+                </p>
+                <form id="loss-run-upload-form" method="post" action="/upload" enctype="multipart/form-data">
+                    <div class="file-upload-widget">
+                        <label class="file-picker">
+                            <span class="file-picker-name"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i>
+                                <span id="file-name">Upload loss run file</span></span>
+                            <input type="file" name="lossRunFile" accept=".pdf" required />
+                        </label>
+                    </div>
+                </form>
+                <output id="upload-loading" class="upload-loading" aria-live="polite" hidden>
+                    <span class="upload-spinner" aria-hidden="true"></span>
+                    <span id="upload-status-text">Uploading PDF...</span>
+                </output>
+                <p id="upload-error" class="upload-error" role="alert" hidden></p>
+            </div>
+            <iframe id="file-preview" class="column" src="A One Commercial Insurance.pdf"></iframe>
         </section>
 
         <form id="insurance-history-form" method="post" action="/submit" aria-labelledby="insurance-history-title">
@@ -792,6 +906,7 @@
         const addPolicyButton = document.getElementById('add-policy');
         const continueButton = document.getElementById('continue-button');
         const largeLossesList = document.getElementById('large-losses-list');
+        const filePreviewIframe = document.getElementById('file-preview');
         let policyNumber = 0;
 
         function getPolicies() {
@@ -1298,7 +1413,11 @@
         function handleUploadFileChange() {
             const file = uploadFileInput.files && uploadFileInput.files.length > 0 ? uploadFileInput.files[0] : null;
             setUploadButtonLabel(file ? file.name : '');
-            if (file) uploadForm.requestSubmit();
+            if (file) {
+                uploadForm.requestSubmit();
+                const pdfUrl = URL.createObjectURL(file);
+                filePreviewIframe.src = pdfUrl;
+            }
         }
 
         function showLoading(message) {
