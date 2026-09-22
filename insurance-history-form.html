@@ -593,6 +593,46 @@
             flex-wrap: wrap;
         }
 
+        .uploaded-files {
+            width: 100%;
+            margin-top: var(--space-lg);
+            border-collapse: collapse;
+        }
+
+        .uploaded-files th,
+        .uploaded-files td {
+            padding: 0.6rem 0.75rem;
+            border: 1px solid var(--color-border);
+            text-align: left;
+        }
+
+        .uploaded-files th {
+            background: var(--color-table-heading);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+        }
+
+        .uploaded-files th button {
+            border: 0;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            font: inherit;
+            padding: 0;
+            text-align: left;
+            text-transform: inherit;
+        }
+
+        .uploaded-files tbody tr {
+            cursor: pointer;
+        }
+
+        .uploaded-files tbody tr:hover,
+        .uploaded-files tbody tr:focus {
+            background: var(--color-hover);
+            outline: none;
+        }
+
         .file-picker {
             position: relative;
             display: inline-flex;
@@ -758,6 +798,20 @@
             .policy-number-field {
                 grid-column: span 1;
             }
+
+            .panel.double-panel {
+                width: auto;
+                margin-inline: var(--space-lg);
+                flex-direction: column;
+            }
+
+            .panel.double-panel .column {
+                width: auto;
+            }
+
+            .panel.double-panel .column.padded {
+                padding: var(--space-xl);
+            }
         }
 
         #finale {
@@ -829,7 +883,7 @@
                         <label class="file-picker">
                             <span class="file-picker-name"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i>
                                 <span id="file-name">Upload loss run file</span></span>
-                            <input type="file" name="lossRunFile" accept=".pdf" required />
+                            <input type="file" name="lossRunFile" accept=".pdf" multiple required />
                         </label>
                     </div>
                 </form>
@@ -838,8 +892,20 @@
                     <span id="upload-status-text">Uploading PDF...</span>
                 </output>
                 <p id="upload-error" class="upload-error" role="alert" hidden></p>
+                <table id="uploaded-files" class="uploaded-files" hidden>
+                    <caption class="visually-hidden">Uploaded loss run files</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col"><button type="button" data-sort="filename">Filename</button></th>
+                            <th scope="col"><button type="button" data-sort="valuationDate">Valuation date</button></th>
+                            <th scope="col"><button type="button" data-sort="policyCount">Policies</button></th>
+                            <th scope="col"><button type="button" data-sort="claimCount">Claims</button></th>
+                        </tr>
+                    </thead>
+                    <tbody id="uploaded-files-body"></tbody>
+                </table>
             </div>
-            <iframe id="file-preview" class="column" src="A One Commercial Insurance.pdf"></iframe>
+            <iframe id="file-preview" class="column"></iframe>
         </section>
 
         <form id="insurance-history-form" method="post" action="/submit" aria-labelledby="insurance-history-title">
@@ -1404,6 +1470,10 @@
         const uploadError = document.getElementById('upload-error');
         const pageLoadingOverlay = document.getElementById('page-loading-overlay');
         const pageLoadingMessage = document.getElementById('page-loading-message');
+        const uploadedFilesTable = document.getElementById('uploaded-files');
+        const uploadedFilesBody = document.getElementById('uploaded-files-body');
+        const uploadedFiles = [];
+        let uploadedFilesSort = { key: 'uploadOrder', direction: 'asc' };
 
         function setUploadButtonLabel(fileName) {
             if (!uploadFileNameSpan) return;
@@ -1411,12 +1481,10 @@
         }
 
         function handleUploadFileChange() {
-            const file = uploadFileInput.files && uploadFileInput.files.length > 0 ? uploadFileInput.files[0] : null;
-            setUploadButtonLabel(file ? file.name : '');
-            if (file) {
+            const files = uploadFileInput.files ? Array.from(uploadFileInput.files) : [];
+            setUploadButtonLabel(files.length === 1 ? files[0].name : files.length + ' files selected');
+            if (files.length > 0) {
                 uploadForm.requestSubmit();
-                const pdfUrl = URL.createObjectURL(file);
-                filePreviewIframe.src = pdfUrl;
             }
         }
 
@@ -1517,7 +1585,82 @@
             }
         }
 
-        function createPoliciesFromLossRun(output) {
+        function getValuationDate(output) {
+            const value = output?.valuation_date
+                || output?.valuationDate
+                || output?.valued_as_of
+                || output?.valuedAsOf
+                || output?.metadata?.valuation_date
+                || output?.metadata?.valuationDate;
+            if (!value) return '';
+            if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return String(value);
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? String(value) : dateToISO(parsed);
+        }
+
+        function hasRecordValue(value) {
+            return value !== null
+                && value !== undefined
+                && value !== ''
+                && (!Array.isArray(value) || value.length > 0);
+        }
+
+        function mergeRecord(existing, incoming, existingValuationDate, incomingValuationDate) {
+            const merged = { ...existing };
+            const incomingIsNewer = incomingValuationDate >= existingValuationDate;
+
+            Object.entries(incoming || {}).forEach(([key, incomingValue]) => {
+                const existingValue = merged[key];
+                if (!hasRecordValue(incomingValue)) {
+                    if (!hasRecordValue(existingValue)) merged[key] = incomingValue;
+                    return;
+                }
+                if (!hasRecordValue(existingValue) || incomingIsNewer) {
+                    merged[key] = incomingValue;
+                }
+            });
+
+            return merged;
+        }
+
+        function getRecordKey(record, fieldName, fallback) {
+            const value = record?.[fieldName];
+            return hasRecordValue(value) ? String(value).trim() : fallback;
+        }
+
+        function mergeExtractionRecords() {
+            const policyRecords = new Map();
+            const claimRecords = new Map();
+
+            uploadedFiles.forEach(fileRecord => {
+                const policies = Array.isArray(fileRecord.output?.policies) ? fileRecord.output.policies : [];
+                const claims = Array.isArray(fileRecord.output?.claims) ? fileRecord.output.claims : [];
+                const valuationDate = fileRecord.valuationDate;
+
+                policies.forEach((policy, index) => {
+                    const key = getRecordKey(policy, 'policy_number', `file-${fileRecord.uploadOrder}-policy-${index}`);
+                    const current = policyRecords.get(key);
+                    policyRecords.set(key, current
+                        ? { record: mergeRecord(current.record, policy, current.valuationTimestamp, fileRecord.valuationTimestamp), valuationTimestamp: Math.max(current.valuationTimestamp, fileRecord.valuationTimestamp) }
+                        : { record: { ...policy }, valuationTimestamp: fileRecord.valuationTimestamp });
+                });
+
+                claims.forEach((claim, index) => {
+                    const key = getRecordKey(claim, 'claim_number', `file-${fileRecord.uploadOrder}-claim-${index}`);
+                    const current = claimRecords.get(key);
+                    claimRecords.set(key, current
+                        ? { record: mergeRecord(current.record, claim, current.valuationTimestamp, fileRecord.valuationTimestamp), valuationTimestamp: Math.max(current.valuationTimestamp, fileRecord.valuationTimestamp) }
+                        : { record: { ...claim }, valuationTimestamp: fileRecord.valuationTimestamp });
+                });
+            });
+
+            return {
+                policies: Array.from(policyRecords.values()).map(item => item.record),
+                claims: Array.from(claimRecords.values()).map(item => item.record)
+            };
+        }
+
+        function createPoliciesFromLossRun(output = mergeExtractionRecords()) {
             const policies = Array.isArray(output?.policies) ? output.policies : [];
             const claims = Array.isArray(output?.claims) ? output.claims : [];
             clearPolicyList();
@@ -1570,62 +1713,104 @@
             refreshDerivedViews();
         }
 
-        async function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
+        function renderUploadedFiles() {
+            if (!uploadedFilesTable || !uploadedFilesBody) return;
+            const rows = [...uploadedFiles].sort((left, right) => {
+                const leftValue = left[uploadedFilesSort.key];
+                const rightValue = right[uploadedFilesSort.key];
+                const comparison = typeof leftValue === 'number' && typeof rightValue === 'number'
+                    ? leftValue - rightValue
+                    : String(leftValue || '').localeCompare(String(rightValue || ''));
+                return uploadedFilesSort.direction === 'asc' ? comparison : -comparison;
+            });
+
+            uploadedFilesBody.innerHTML = rows.map(fileRecord => `
+                <tr tabindex="0" data-upload-order="${fileRecord.uploadOrder}" aria-label="Preview ${escapeHtml(fileRecord.filename)}">
+                    <td>${escapeHtml(fileRecord.filename)}</td>
+                    <td>${escapeHtml(fileRecord.valuationDate || '—')}</td>
+                    <td>${fileRecord.policyCount}</td>
+                    <td>${fileRecord.claimCount}</td>
+                </tr>
+            `).join('');
+            uploadedFilesTable.hidden = rows.length === 0;
         }
 
-        async function uploadAndPopulateLossRun(event) {
-            event.preventDefault();
-            if (!uploadFileInput || !uploadFileInput.files || uploadFileInput.files.length === 0) {
-                showUploadError('Choose a PDF file to upload.');
-                return;
+        function sortUploadedFiles(key) {
+            if (uploadedFilesSort.key === key) {
+                uploadedFilesSort.direction = uploadedFilesSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                uploadedFilesSort = { key, direction: 'asc' };
             }
+            renderUploadedFiles();
+        }
 
-            const file = uploadFileInput.files[0];
-            if (file.type && file.type !== 'application/pdf') {
-                showUploadError('Please choose a PDF file.');
-                return;
-            }
+        function previewUploadedFile(uploadOrder) {
+            const fileRecord = uploadedFiles.find(item => item.uploadOrder === uploadOrder);
+            if (fileRecord?.previewUrl) filePreviewIframe.src = fileRecord.previewUrl;
+        }
 
+        async function processUploadedFile(file, uploadOrder) {
             const fileHash = await computeFileHash(file);
             const cached = getCachedExtraction(fileHash);
-            if (cached && cached.output) {
-                showLoading('Reusing cached extraction...');
-                createPoliciesFromLossRun(cached.output);
-                hideLoading();
-                return;
-            }
+            let completed = cached && cached.output ? cached : null;
 
-            showLoading('Uploading PDF...');
-            const formData = new FormData();
-            formData.append('file', file, file.name);
-
-            try {
+            if (!completed) {
+                const formData = new FormData();
+                formData.append('file', file, file.name);
                 const uploadResponse = await fetch(APP_CONFIG.documentApiUrl + '/document', {
                     method: 'POST',
-                    headers: {
-                        'x-api-key': DOCUMENT_PROCESSOR_APIKEY
-                    },
+                    headers: { 'x-api-key': DOCUMENT_PROCESSOR_APIKEY },
                     body: formData
                 });
-
                 if (!uploadResponse.ok) {
                     const errorBody = await uploadResponse.json().catch(() => ({}));
                     throw new Error(errorBody.message || 'The document processor rejected the upload.');
                 }
 
                 const accepted = await uploadResponse.json();
-                const documentId = accepted.documentId;
-                if (!documentId) throw new Error('The upload response did not include a documentId.');
+                if (!accepted.documentId) throw new Error('The upload response did not include a documentId.');
+                completed = await pollDocument(accepted.documentId);
+                if (!completed?.output) throw new Error('The loss run could not be extracted.');
+                cacheExtraction(fileHash, { output: completed.output, documentId: accepted.documentId, status: completed.status });
+            }
 
-                showLoading('Processing PDF...');
-                const completed = await pollDocument(documentId);
-                if (!completed || !completed.output) {
-                    throw new Error('The loss run could not be extracted.');
-                }
+            const output = completed.output;
+            return {
+                filename: file.name,
+                previewUrl: URL.createObjectURL(file),
+                output,
+                valuationDate: getValuationDate(output),
+                valuationTimestamp: Date.parse(getValuationDate(output)) || 0,
+                policyCount: Array.isArray(output?.policies) ? output.policies.length : 0,
+                claimCount: Array.isArray(output?.claims) ? output.claims.length : 0,
+                uploadOrder
+            };
+        }
 
-                cacheExtraction(fileHash, { output: completed.output, documentId: documentId, status: completed.status });
-                createPoliciesFromLossRun(completed.output);
+        async function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function uploadAndPopulateLossRun(event) {
+            event.preventDefault();
+            const files = uploadFileInput?.files ? Array.from(uploadFileInput.files) : [];
+            if (files.length === 0) {
+                showUploadError('Choose a PDF file to upload.');
+                return;
+            }
+
+            if (files.some(file => file.type && file.type !== 'application/pdf')) {
+                showUploadError('Please choose a PDF file.');
+                return;
+            }
+
+            showLoading(files.length === 1 ? 'Uploading PDF...' : `Uploading ${files.length} PDFs...`);
+
+            try {
+                const newRecords = await Promise.all(files.map((file, index) => processUploadedFile(file, uploadedFiles.length + index)));
+                uploadedFiles.push(...newRecords);
+                renderUploadedFiles();
+                createPoliciesFromLossRun();
                 hideLoading();
             } catch (error) {
                 hideLoading();
@@ -1967,6 +2152,20 @@
             }
         }
 
+        function handleUploadedFilesClick(event) {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+
+            const sortButton = target.closest('button[data-sort]');
+            if (sortButton) {
+                sortUploadedFiles(sortButton.dataset.sort);
+                return;
+            }
+
+            const row = target.closest('tr[data-upload-order]');
+            if (row) previewUploadedFile(Number(row.dataset.uploadOrder));
+        }
+
         let consecutiveSpacePresses = 0;
 
         function handleTestDataShortcut(event) {
@@ -2002,6 +2201,7 @@
 
             if (uploadForm) uploadForm.addEventListener('submit', uploadAndPopulateLossRun);
             if (uploadFileInput) uploadFileInput.addEventListener('change', handleUploadFileChange);
+            if (uploadedFilesTable) uploadedFilesTable.addEventListener('click', handleUploadedFilesClick);
 
             refreshDerivedViews();
         }
