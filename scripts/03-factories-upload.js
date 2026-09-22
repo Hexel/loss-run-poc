@@ -514,7 +514,7 @@
                     effectiveDate: toDateInputValue(policy.effective_date),
                     expirationDate: toDateInputValue(policy.expiration_date),
                     insurer,
-                    premium: '',
+                    premium: policy.premium ?? '',
                     policyNumber: policy.policy_number || '',
                     coverageLines: lines
                 });
