@@ -668,6 +668,7 @@ function renderUploadedFiles() {
                     <td>${escapeHtml(fileRecord.valuationDate || "—")}</td>
                     <td>${fileRecord.policyCount}</td>
                     <td>${fileRecord.claimCount}</td>
+                    <td class="indicator-column"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> </td>
                 </tr>
             `,
     )
@@ -690,9 +691,21 @@ function previewUploadedFile(uploadOrder) {
     (item) => item.uploadOrder === uploadOrder,
   );
   if (fileRecord?.previewUrl) {
+    filePreviewIframe.style.display = "block";
     filePreviewIframe.src = fileRecord.previewUrl;
     filePreviewModalFrame.src = fileRecord.previewUrl;
     maximizePreviewButton.hidden = false;
+
+    // Set target row as active
+    document.querySelectorAll('[data-upload-order]').forEach(row => {
+      console.log(row)
+      if (Number(row.getAttribute('data-upload-order')) === uploadOrder) {
+        row.classList.add('active');
+      } else {
+        row.classList.remove('active');
+      }
+    });
+
   }
 }
 
@@ -778,9 +791,7 @@ async function uploadAndPopulateLossRun(event) {
     renderUploadedFiles();
     createPoliciesFromLossRun();
     hideLoading();
-    if (!filePreviewIframe.src) {
-      previewUploadedFile(0);
-    }
+    previewUploadedFile(uploadedFiles.length - 1);
   } catch (error) {
     hideLoading();
     showUploadError(error.message || "The loss run could not be processed.");

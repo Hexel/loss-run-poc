@@ -23,7 +23,7 @@
     <main>
         <h1 class="visually-hidden">Insurance History</h1>
 
-        <section id="upload-loss-run" class="panel double-panel" aria-labelledby="upload-loss-run-title">
+        <section id="upload-loss-run" class="panel double-panel backless" aria-labelledby="upload-loss-run-title">
             <div class="column padded">
                 <h2 id="upload-loss-run-title" class="panel-title">Upload Loss Run</h2>
                 <p>Have a loss run file? Use the button below to upload and automatically populate your insurance
@@ -51,6 +51,7 @@
                             <th scope="col"><button type="button" data-sort="valuationDate">Valuation date</button></th>
                             <th scope="col"><button type="button" data-sort="policyCount">Policies</button></th>
                             <th scope="col"><button type="button" data-sort="claimCount">Claims</button></th>
+                            <th scope="col"></th>
                         </tr>
                     </thead>
                     <tbody id="uploaded-files-body"></tbody>
@@ -59,7 +60,7 @@
             <div class="file-preview-column column">
                 <div class="file-preview-toolbar">
                     <span class="visually-hidden" id="file-preview-label">Loss run file preview</span>
-                    <button type="button" id="maximize-preview" class="button preview-button" aria-label="Open file preview full screen" title="Open file preview full screen" hidden>
+                    <button type="button" id="maximize-preview" class="button preview-button icon-button" aria-label="Open file preview full screen" title="Open file preview full screen" hidden>
                         <i class="fa-solid fa-expand" aria-hidden="true"></i>
                     </button>
                 </div>

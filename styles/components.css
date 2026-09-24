@@ -1,10 +1,17 @@
 .panel,
 #insurance-history-form {
+  box-sizing: border-box;
   max-width: var(--content-width);
   margin-inline: auto;
   padding: var(--space-2xl);
   background: var(--color-surface);
   box-shadow: var(--shadow-panel);
+  margin-block: var(--space-2xl);
+}
+
+.panel.backless {
+  background-color: transparent;
+  box-shadow: none;
 }
 
 #insurance-history-form {
@@ -22,10 +29,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
-}
-
-.panel {
-  margin-block: var(--space-2xl);
 }
 
 .panel.faded {
@@ -80,23 +83,27 @@
 
 .file-preview-toolbar {
   position: absolute;
-  bottom: var(--space-md);
-  left: var(--space-md);
+  bottom: 0;
+  left: 0;
   z-index: 1;
 }
 
-.preview-button {
-  padding: 0.55rem 0.7rem;
+button.preview-button {
+  padding: 1rem;
   background: var(--color-action);
   color: var(--color-surface);
+  border-radius: 0;
 }
 
 #file-preview {
-  display: block;
+  display: none;
   width: 100%;
   height: 100%;
   min-height: 32rem;
   background-color: grey;
+  border: solid 5px var(--color-action);
+  box-sizing: border-box;
+  /* margin-left: calc(var(--space-2xl) * -1); */
 }
 
 .file-preview-modal {
@@ -458,22 +465,54 @@
 }
 
 .uploaded-files {
-  width: 100%;
-  margin-top: var(--space-lg);
   border-collapse: collapse;
+  width: calc(100% + var(--space-2xl) * 1);
+  margin-top: var(--space-lg);
+  margin-right: calc(var(--space-2xl) * -1);
 }
 
 .uploaded-files th,
 .uploaded-files td {
   padding: 0.6rem 0.75rem;
-  border: 1px solid var(--color-border);
   text-align: left;
 }
 
+.uploaded-files .indicator-column {
+  text-align: right;
+  i.fa-solid {
+    opacity: 0;
+  }
+}
+
+.uploaded-files tr.active .indicator-column i.fa-solid,
+.uploaded-files tr:hover .indicator-column i.fa-solid {
+  opacity: 1;
+}
+
+.uploaded-files tr:hover:not(.active) {
+  filter: brightness(0.8);
+}
+
+.uploaded-files td {
+  background-color: var(--color-action-secondary);
+  background-color: transparent;
+  color: black;
+}
+
+.uploaded-files .active td {
+  background-color: var(--color-action);
+  color: white;
+}
+
+.uploaded-files th:last-child,
+.uploaded-files td:last-child {
+    border-right: none;
+}
+
 .uploaded-files th {
-  background: var(--color-table-heading);
   font-size: 0.82rem;
   text-transform: uppercase;
+  font-weight: bold;
 }
 
 .uploaded-files th button {
@@ -551,8 +590,7 @@
 }
 
 .button:hover {
-  opacity: 0.92;
-  transform: translateY(-1px);
+  filter: brightness(1.1);
 }
 
 .policy-button {
@@ -563,6 +601,12 @@
 .remove-button {
   background: var(--color-danger);
   color: contrast-color(var(--color-danger));
+}
+
+.icon-button {
+    .fa-solid {
+        margin-right: 0;
+    }
 }
 
 .page-loading-overlay {
