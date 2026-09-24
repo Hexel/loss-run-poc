@@ -107,7 +107,7 @@ button.preview-button {
 }
 
 .file-preview-modal {
-  width: min(96vw, 1400px);
+  width: min(96vw, 1200px);
   height: min(94vh, 1000px);
   max-width: none;
   max-height: none;
@@ -115,6 +115,10 @@ button.preview-button {
   border: 0;
   background: var(--color-surface);
   box-shadow: var(--shadow-overlay-card);
+  flex-direction: column;
+}
+dialog[open].file-preview-modal {
+  display: flex!important;
 }
 
 .file-preview-modal::backdrop {
@@ -136,6 +140,7 @@ button.preview-button {
 }
 
 #file-preview-modal-frame {
+  flex-grow: 1;
   display: block;
   width: 100%;
   height: calc(100% - 4.25rem);
@@ -466,9 +471,9 @@ button.preview-button {
 
 .uploaded-files {
   border-collapse: collapse;
-  width: calc(100% + var(--space-2xl) * 1);
+  width: calc(100%);
   margin-top: var(--space-lg);
-  margin-right: calc(var(--space-2xl) * -1);
+  /* margin-right: calc(var(--space-2xl) * -1); */
 }
 
 .uploaded-files th,

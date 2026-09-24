@@ -38,12 +38,13 @@
         }
 
         #finale {
-            max-width: calc(var(--content-width) + 4rem);
+            max-width: var(--content-width);
             margin: 0 auto;
         }
 
         .continue-button {
             margin-top: var(--space-lg);
+            margin-bottom: var(--space-lg);
             padding: 0.8rem 1.2rem;
             background: var(--color-action);
             color: var(--color-surface);
