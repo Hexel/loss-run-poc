@@ -343,18 +343,9 @@ const uploadedFilesBody = document.getElementById("uploaded-files-body");
 const uploadedFiles = [];
 let uploadedFilesSort = { key: "uploadOrder", direction: "asc" };
 
-function setUploadButtonLabel(fileName) {
-  if (!uploadFileNameSpan) return;
-  uploadFileNameSpan.textContent = fileName
-    ? "Upload file: " + fileName
-    : "Upload loss run file";
-}
-
 function handleUploadFileChange() {
   const files = uploadFileInput.files ? Array.from(uploadFileInput.files) : [];
-  setUploadButtonLabel(
-    files.length === 1 ? files[0].name : files.length + " files selected",
-  );
+
   if (files.length > 0) {
     uploadForm.requestSubmit();
   }
@@ -787,6 +778,9 @@ async function uploadAndPopulateLossRun(event) {
     renderUploadedFiles();
     createPoliciesFromLossRun();
     hideLoading();
+    if (!filePreviewIframe.src) {
+      previewUploadedFile(0);
+    }
   } catch (error) {
     hideLoading();
     showUploadError(error.message || "The loss run could not be processed.");
