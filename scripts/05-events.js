@@ -158,7 +158,8 @@ function handleUploadedFilesClick(event) {
   if (row) previewUploadedFile(Number(row.dataset.uploadOrder));
 }
 
-let consecutiveSpacePresses = 0;
+let consecutiveTestDataPresses = 0;
+let lastTestDataKey = null;
 
 function handleTestDataShortcut(event) {
   if (event.repeat) return;
@@ -167,18 +168,23 @@ function handleTestDataShortcut(event) {
   const isInteractive =
     target instanceof Element &&
     target.closest('input, textarea, select, button, [contenteditable="true"]');
+  const key = event.code === "Space" ? " " : event.key;
+  const isShortcut = [" ", "a", "b", "c"].includes(key);
 
-  if (isInteractive || event.code !== "Space") {
-    consecutiveSpacePresses = 0;
+  if (isInteractive || !isShortcut || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
+    consecutiveTestDataPresses = 0;
+    lastTestDataKey = null;
     return;
   }
 
   event.preventDefault();
-  consecutiveSpacePresses += 1;
+  consecutiveTestDataPresses = key === lastTestDataKey ? consecutiveTestDataPresses + 1 : 1;
+  lastTestDataKey = key;
 
-  if (consecutiveSpacePresses === 5) {
-    consecutiveSpacePresses = 0;
-    seedTestData();
+  if (consecutiveTestDataPresses === 5) {
+    consecutiveTestDataPresses = 0;
+    lastTestDataKey = null;
+    seedTestData(key);
   }
 }
 

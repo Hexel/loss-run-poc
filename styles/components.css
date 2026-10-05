@@ -239,7 +239,12 @@ sup {
   position: relative;
 }
 
-.summary-edit {
+.summary-table .claim-count-cell {
+  white-space: nowrap;
+}
+
+.summary-edit,
+.summary-revert {
   position: absolute;
   top: 0.25rem;
   right: 0.25rem;
@@ -252,6 +257,7 @@ sup {
   opacity: 0;
 }
 
+.summary-revert,
 .editable-summary-cell:hover .summary-edit,
 .editable-summary-cell:focus-within .summary-edit {
   opacity: 1;
@@ -283,7 +289,9 @@ sup {
 }
 
 .summary-chart:has(#loss-cost-per-unit-chart),
-.summary-chart:has(#average-reporting-lag-chart) {
+.summary-chart:has(#average-reporting-lag-chart),
+.summary-chart:has(#claim-count-chart),
+.summary-chart:has(#incurred-loss-chart) {
   border-radius: var(--radius-md);
   background: var(--color-surface-subtle);
 }
@@ -320,10 +328,21 @@ sup {
   font-weight: 600;
 }
 
+.trend-positive { --trend-color: #15803d; }
+.trend-stable { --trend-color: #a87516; }
+.trend-negative { --trend-color: #dc2626; }
+
+.chart-trend-note {
+  margin: var(--space-sm) 0 0;
+  color: var(--trend-color);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
 .loss-cost-line,
 .summary-trend-line {
   fill: none;
-  stroke: var(--color-action);
+  stroke: var(--trend-color, var(--color-action));
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -332,13 +351,8 @@ sup {
 .loss-cost-point,
 .summary-trend-point {
   fill: var(--color-surface);
-  stroke: var(--color-action);
+  stroke: var(--trend-color, var(--color-action));
   stroke-width: 3;
-}
-
-.loss-cost-developed .loss-cost-line,
-.loss-cost-developed .loss-cost-point {
-  stroke: #a87516;
 }
 
 .loss-cost-developed .loss-cost-line { stroke-dasharray: 6 5; }
@@ -360,10 +374,10 @@ sup {
 .loss-cost-legend span::before {
   content: "";
   flex: 0 0 1.5rem;
-  border-top: 3px solid var(--color-action);
+  border-top: 3px solid var(--trend-color, var(--color-action));
 }
 
-.loss-cost-legend .loss-cost-developed::before { border-top: 3px dashed #a87516; }
+.loss-cost-legend .loss-cost-developed::before { border-top-style: dashed; }
 
 @media (max-width: 760px) {
   .summary-charts { grid-template-columns: 1fr; }
@@ -1023,4 +1037,32 @@ dialog[open].file-preview-modal {
 
 .remove-claim .fa-solid {
   margin-right: 0;
+}
+
+
+.summary-table td,
+.editable-summary-cell,
+.inline-cell-input {
+    font-size: 1rem;
+}
+.panel .summary-table td:has(.inline-cell-input) {
+    padding: 0;
+    background-color: beige;
+
+    .inline-cell-input {
+        padding: 0.7rem 0.8rem;
+        margin: 0;
+        border: none;
+        background-color: transparent;
+    }
+    .inline-cell-input::-webkit-outer-spin-button,
+    .inline-cell-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+}
+
+
+#insurance-history-summary-foot tr td {
+  white-space: nowrap;
 }

@@ -16,7 +16,7 @@
     <div id="page-loading-overlay" class="page-loading-overlay" role="status" aria-live="polite" aria-hidden="true">
         <div class="page-loading-card">
             <span class="upload-spinner" aria-hidden="true"></span>
-            <span id="page-loading-message">Processing PDF...</span>
+            <span id="page-loading-message">Processing file...</span>
         </div>
     </div>
 
@@ -29,20 +29,20 @@
                     <h2 id="upload-loss-run-title" class="panel-title">Upload Loss Run</h2>
                 </header>
                 <p>Have a loss run file? Use the button below to upload and automatically populate your insurance
-                    history.
+                    history. Supported formats: PDF, CSV, and Microsoft Excel (.xls, .xlsx).
                 </p>
                 <form id="loss-run-upload-form" method="post" action="/upload" enctype="multipart/form-data">
                     <div class="file-upload-widget">
                         <label class="file-picker">
                             <span class="file-picker-name"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i>
                                 <span id="file-name">Upload loss run file</span></span>
-                            <input type="file" name="lossRunFile" accept=".pdf" multiple required />
+                            <input type="file" name="lossRunFile" accept=".pdf,.csv,.xls,.xlsx" multiple required />
                         </label>
                     </div>
                 </form>
                 <output id="upload-loading" class="upload-loading" aria-live="polite" hidden>
                     <span class="upload-spinner" aria-hidden="true"></span>
-                    <span id="upload-status-text">Uploading PDF...</span>
+                    <span id="upload-status-text">Uploading file...</span>
                 </output>
                 <p id="upload-error" class="upload-error" role="alert" hidden></p>
                 <table id="uploaded-files" class="uploaded-files" hidden>
@@ -135,18 +135,8 @@
                 <div class="summary-charts">
                     <div class="summary-chart"><h3>Average Reporting Lag</h3><div id="average-reporting-lag-chart" role="img" aria-label="Average Reporting Lag line chart"></div></div>
                     <div class="summary-chart"><h3>Loss Cost Per Unit</h3><div id="loss-cost-per-unit-chart" role="img" aria-label="Loss Cost Per Unit line chart">Enter units for a policy year to see loss cost per unit.</div></div>
-                </div>
-                <div class="summary-info-boxes">
-                    <div class="summary-info-box">
-                        <h3>4-year Average Reporting Lag</h3>
-                        <p id="average-reporting-lag">—</p>
-                        <span>Equal-weight average of yearly reporting lags for the latest four policy years. Claims missing either date and years with no dated claims are excluded.</span>
-                    </div>
-                    <div class="summary-info-box">
-                        <h3>Loss Cost Per Unit</h3>
-                        <p id="loss-cost-per-unit">—</p>
-                        <span>X-year total incurred divided by the X-year total units.</span>
-                    </div>
+                    <div class="summary-chart"><h3>Claim Count Per Year</h3><div id="claim-count-chart" role="img" aria-label="Claim Count Per Year line chart"></div></div>
+                    <div class="summary-chart"><h3>Incurred Loss Per Year</h3><div id="incurred-loss-chart" role="img" aria-label="Developed and Undeveloped Incurred Loss Per Year line chart"></div></div>
                 </div>
             </div>
         </section>

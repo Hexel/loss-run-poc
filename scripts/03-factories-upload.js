@@ -364,10 +364,10 @@ function showLoading(message) {
     pageLoadingOverlay.setAttribute("aria-hidden", "false");
   }
   if (pageLoadingMessage) {
-    pageLoadingMessage.textContent = message || "Processing PDF...";
+    pageLoadingMessage.textContent = message || "Processing file...";
   }
   if (loadingPanel) loadingPanel.hidden = false;
-  if (loadingText) loadingText.textContent = message || "Uploading PDF...";
+  if (loadingText) loadingText.textContent = message || "Uploading file...";
   if (uploadError) {
     uploadError.textContent = "";
     uploadError.hidden = true;
@@ -774,19 +774,19 @@ async function uploadAndPopulateLossRun(event) {
   event.preventDefault();
   const files = uploadFileInput?.files ? Array.from(uploadFileInput.files) : [];
   if (files.length === 0) {
-    showUploadError("Choose a PDF file to upload.");
+    showUploadError("Choose a PDF, CSV, or Microsoft Excel file to upload.");
     return;
   }
 
-  if (files.some((file) => file.type && file.type !== "application/pdf")) {
-    showUploadError("Please choose a PDF file.");
+  if (files.some((file) => !/\.(pdf|csv|xls|xlsx)$/i.test(file.name))) {
+    showUploadError("Please choose PDF, CSV, or Microsoft Excel (.xls, .xlsx) files.");
     return;
   }
 
   showLoading(
     files.length === 1
-      ? "Uploading PDF..."
-      : `Uploading ${files.length} PDFs...`,
+      ? "Uploading file..."
+      : `Uploading ${files.length} files...`,
   );
 
   try {

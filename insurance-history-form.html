@@ -16,7 +16,7 @@
     <div id="page-loading-overlay" class="page-loading-overlay" role="status" aria-live="polite" aria-hidden="true">
         <div class="page-loading-card">
             <span class="upload-spinner" aria-hidden="true"></span>
-            <span id="page-loading-message">Processing PDF...</span>
+            <span id="page-loading-message">Processing file...</span>
         </div>
     </div>
 
@@ -29,20 +29,20 @@
                     <h2 id="upload-loss-run-title" class="panel-title">Upload Loss Run</h2>
                 </header>
                 <p>Have a loss run file? Use the button below to upload and automatically populate your insurance
-                    history.
+                    history. Supported formats: PDF, CSV, and Microsoft Excel (.xls, .xlsx).
                 </p>
                 <form id="loss-run-upload-form" method="post" action="/upload" enctype="multipart/form-data">
                     <div class="file-upload-widget">
                         <label class="file-picker">
                             <span class="file-picker-name"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i>
                                 <span id="file-name">Upload loss run file</span></span>
-                            <input type="file" name="lossRunFile" accept=".pdf" multiple required />
+                            <input type="file" name="lossRunFile" accept=".pdf,.csv,.xls,.xlsx" multiple required />
                         </label>
                     </div>
                 </form>
                 <output id="upload-loading" class="upload-loading" aria-live="polite" hidden>
                     <span class="upload-spinner" aria-hidden="true"></span>
-                    <span id="upload-status-text">Uploading PDF...</span>
+                    <span id="upload-status-text">Uploading file...</span>
                 </output>
                 <p id="upload-error" class="upload-error" role="alert" hidden></p>
                 <table id="uploaded-files" class="uploaded-files" hidden>
