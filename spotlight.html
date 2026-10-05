@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotlight</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="styles/reset.css">
+    <link rel="stylesheet" href="styles/theme.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+    <style>
+        .spotlight-header {
+            max-width: var(--content-width);
+            margin: var(--space-2xl) auto 0;
+            padding: 0 var(--space-2xl);
+        }
+
+        .spotlight-header p {
+            margin: calc(var(--space-xl) * -1) 0 var(--space-xl);
+            color: var(--color-text-muted);
+            font-size: 1.1rem;
+        }
+
+        .spotlight-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: var(--space-2xl);
+            max-width: var(--content-width);
+            margin: 0 auto var(--space-2xl);
+            padding: 0 var(--space-2xl);
+        }
+
+        .spotlight-grid .panel {
+            width: 100%;
+            margin: 0;
+            padding: var(--space-xl);
+        }
+
+        .spotlight-grid .panel:first-child {
+            grid-column: 1 / -1;
+        }
+
+        .spotlight-grid .panel-title {
+            font-size: 1.45rem;
+            margin-bottom: var(--space-lg);
+        }
+
+        .spotlight-grid .panel-header .panel-title {
+            margin: 0;
+        }
+
+        .flag-list {
+            display: grid;
+            gap: var(--space-md);
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .flag-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-md);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .flag-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.3rem 0.7rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .status.clear { background: #e5f3e8; color: var(--color-action); }
+        .status.review { background: #fff3d8; color: #8a6312; }
+
+        .spotlight-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        .spotlight-table th,
+        .spotlight-table td {
+            padding: 0.7rem 0.5rem;
+            border-bottom: 1px solid var(--color-border);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .spotlight-table th {
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .spotlight-table tr td.right-align,
+        .spotlight-table tr th.right-align { text-align: right; }
+
+        .spotlight-table tr:last-child td { border-bottom: 0; }
+        .spotlight-table tr.bold-row td { font-weight: 700; }
+
+        .premium-breakdown-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-sm);
+        }
+
+        .premium-breakdown-header {
+            padding: 0 var(--space-sm);
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .premium-charge {
+            min-width: 0;
+            border: 1px solid var(--color-control-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            margin-top: var(--space-sm);
+            font-size: 0.92rem;
+        }
+
+        .premium-charge strong:last-child { white-space: nowrap; }
+
+        .premium-charge-summary {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            cursor: pointer;
+            list-style: none;
+            font-weight: bold;
+        }
+
+        .premium-charge-summary::-webkit-details-marker { display: none; }
+
+        .premium-charge-summary:focus-visible {
+            outline: 2px solid var(--color-action);
+            outline-offset: -2px;
+        }
+
+        .premium-charge[open] > .premium-charge-summary {
+            background: var(--color-surface-subtle);
+        }
+
+        .premium-charge[open] > .premium-charge-summary .fa-chevron-right {
+            transform: rotate(90deg);
+        }
+
+        .premium-details {
+            padding: 0;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .premium-detail {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(8rem, 14rem);
+            align-items: center;
+            gap: var(--space-lg);
+            min-height: 2.75rem;
+            box-sizing: border-box;
+            padding: var(--space-xs) var(--space-md);
+            background: var(--color-hover);
+            border-bottom: 1px solid var(--color-border);
+            line-height: 1.45;
+        }
+
+        .premium-detail:last-child {
+            border-bottom: 0;
+        }
+
+        .premium-detail > * {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .premium-detail > span:last-child,
+        .premium-detail input,
+        .premium-detail select {
+            width: 100%;
+            min-height: 2.25rem;
+            height: 2.25rem;
+            box-sizing: border-box;
+            border: 1px solid transparent;
+            border-radius: 2px;
+            padding: 0.25rem 0.45rem;
+            font: inherit;
+            color: var(--color-text);
+            background: transparent;
+            text-align: right;
+        }
+
+        .premium-detail > span:last-child {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .premium-detail input:hover,
+        .premium-detail select:hover {
+            border-color: var(--color-control-border);
+            background: var(--color-surface);
+        }
+
+        .premium-detail input:focus-visible,
+        .premium-detail select:focus-visible {
+            outline: 2px solid var(--color-action);
+            outline-offset: -1px;
+            background: var(--color-surface);
+        }
+
+        #workbench-assistant {
+            margin-top: var(--space-lg);
+            padding: var(--space-lg);
+            border-left: 3px solid var(--color-action);
+            background: var(--color-surface-subtle);
+            color: var(--color-text);
+            font-size: 1rem;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        #workbench-assistant p {
+            margin: 0;
+        }
+
+        .workbench-premium-breakdown {
+            margin-top: var(--space-lg);
+            container-type: inline-size;
+        }
+
+        .workbench-insurance-form {
+            margin-top: var(--space-lg);
+            container-type: inline-size;
+        }
+
+        .workbench-body {
+            grid-template-rows: minmax(0, 1fr);
+            overflow: hidden;
+        }
+
+        .workbench-column {
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        .workbench-context-column {
+            --color-surface: #34383c;
+            --color-surface-subtle: #2d3034;
+            --color-text: #e1e3e5;
+            --color-text-strong: #f5f6f7;
+            --color-text-muted: #bcc2c8;
+            --color-border: #4e5359;
+            --color-control-border: #636b73;
+            --color-table-heading: #3c4045;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            overflow: hidden;
+            background: #26282b;
+            color: var(--color-text);
+        }
+
+        .workbench-context-toolbar,
+        .workbench-context-footer {
+            flex-shrink: 0;
+            padding: var(--space-lg);
+        }
+
+        .workbench-context-toolbar {
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        #workbench-panel-select {
+            box-sizing: border-box;
+            width: 100%;
+            min-width: 0;
+            min-height: var(--control-height);
+            padding: 0.5rem;
+            border: 1px solid var(--color-control-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-surface);
+            color: var(--color-text-strong);
+            font: inherit;
+            font-weight: 700;
+        }
+
+        .workbench-context-content {
+            flex: 1;
+            min-height: 0;
+            padding: var(--space-lg);
+            overflow: auto;
+            scrollbar-color: #CCC transparent;
+        }
+
+        .workbench-context-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .workbench-context-content::-webkit-scrollbar-thumb {
+            background: #CCC;
+        }
+
+        .workbench-context-content .claim-list,
+        .workbench-context-content .workbench-listed-view {
+            scrollbar-color: auto;
+        }
+
+        .workbench-context-content .workbench-insurance-form {
+            margin-top: 0;
+        }
+
+        .workbench-context-column .form-entry {
+            --color-surface: #ffffff;
+            --color-surface-subtle: #fbfbfb;
+            --color-text: #3d3d3d;
+            --color-text-strong: #2a2a2a;
+            --color-text-muted: #666666;
+            --color-border: #d8d8d8;
+            --color-control-border: #bcbcbc;
+            background: var(--color-surface-subtle);
+            color: var(--color-text);
+        }
+
+        .workbench-context-column .form-field input {
+            background: var(--color-surface);
+        }
+
+        .workbench-context-footer {
+            border-top: 1px solid var(--color-border);
+        }
+
+        .workbench-context-footer .button {
+            max-width: 100%;
+            white-space: normal;
+            background: #3b6e50;
+            color: #ffffff;
+        }
+
+        .workbench-context-footer .button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .workbench-listed-view {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .workbench-listed-view .listed-table {
+            min-width: 42rem;
+        }
+
+        .workbench-context-column [hidden] {
+            display: none;
+        }
+
+        .workbench-insurance-form .form-row {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .workbench-insurance-form .workbench-coverage-field {
+            grid-column: 1 / -1;
+        }
+
+        .workbench-insurance-form .form-field {
+            min-width: 0;
+        }
+
+        .workbench-insurance-form .claims-form {
+            overflow: visible;
+        }
+
+        .workbench-insurance-form .claim-list {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .workbench-insurance-form input {
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .workbench-insurance-form .workbench-subheading {
+            margin-bottom: var(--space-lg);
+        }
+
+        .workbench-stub-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-top: var(--space-lg);
+        }
+
+        .workbench-insurance-form .button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        @container (max-width: 320px) {
+            .workbench-insurance-form .form-row {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .premium-charge-summary {
+                grid-template-columns: auto minmax(0, 1fr);
+            }
+
+            .premium-charge-summary strong:last-child {
+                grid-column: 2;
+                justify-self: end;
+            }
+
+            .premium-detail {
+                grid-template-columns: minmax(0, 1fr);
+                gap: var(--space-xs);
+            }
+        }
+
+        .automated-premium {
+            background: var(--color-surface-subtle);
+        }
+
+        .automated-premium-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(10rem, 20rem);
+            align-items: center;
+            gap: var(--space-xl);
+            padding: var(--space-lg) 0;
+        }
+
+        .automated-premium-row strong { font-size: 1rem; }
+
+        .automated-premium-value {
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 3.5rem;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--color-control-border);
+            border-radius: var(--radius-md);
+            background: var(--color-surface);
+            color: var(--color-text-strong);
+            font: inherit;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .automated-adjustment {
+            margin: var(--space-md) 0;
+            padding: var(--space-xl);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            background: var(--color-surface);
+            box-shadow: var(--shadow-card);
+        }
+
+        .automated-adjustment-summary {
+            display: flex;
+            justify-content: space-between;
+            gap: var(--space-lg);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .automated-adjustment-summary strong:last-child { color: #c79427; }
+
+        .automated-adjustment input[type="range"] {
+            width: 100%;
+            margin-top: var(--space-lg);
+            accent-color: #c79427;
+        }
+
+        .automated-premium-total {
+            display: flex;
+            justify-content: space-between;
+            gap: var(--space-lg);
+            margin-top: var(--space-lg);
+            padding-top: var(--space-xl);
+            border-top: 1px solid var(--color-border);
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .spotlight-note {
+            margin: var(--space-lg) 0 0;
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+        }
+
+        .listed-panel,
+        .loss-history-panel {
+            grid-column: 1 / -1;
+        }
+
+        .loss-history-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-xl);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .loss-history-tab {
+            border: 0;
+            border-bottom: 3px solid transparent;
+            border-radius: 0;
+            padding: 0.7rem 0.9rem;
+            background: transparent;
+            color: var(--color-text-muted);
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .loss-history-tab[aria-selected="true"] {
+            border-bottom-color: var(--color-action);
+            color: var(--color-text-strong);
+        }
+
+        .loss-history-tabpanel[hidden] { display: none; }
+
+        .loss-history-insight {
+            margin: 0;
+            padding: var(--space-xl);
+            border-left: 4px solid var(--color-action);
+            background: var(--color-surface-subtle);
+            font-size: 1.2rem;
+            line-height: 1.7;
+        }
+
+        .loss-history-charts {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: var(--space-xl);
+            margin-top: var(--space-xl);
+        }
+
+        .loss-chart {
+            margin: 0;
+            padding: var(--space-lg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            background: var(--color-surface-subtle);
+        }
+
+        .loss-chart figcaption {
+            margin-bottom: var(--space-lg);
+            color: var(--color-text-strong);
+            font-weight: 700;
+        }
+
+        .loss-bars {
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+            gap: var(--space-lg);
+            height: 8rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .loss-bar-group {
+            display: flex;
+            flex: 1;
+            align-items: end;
+            justify-content: center;
+            gap: 0.2rem;
+            height: 100%;
+        }
+
+        .loss-bar {
+            width: min(2rem, 42%);
+            min-height: 0.25rem;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            background: var(--color-action);
+        }
+
+        .loss-bar.reserve { background: #c79427; }
+
+        .loss-bar-labels {
+            display: flex;
+            justify-content: space-around;
+            gap: var(--space-lg);
+            padding-top: var(--space-sm);
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        @media (max-width: 760px) {
+            .loss-history-charts { grid-template-columns: 1fr; }
+        }
+
+        .loss-history-section + .loss-history-section {
+            margin-top: var(--space-2xl);
+        }
+
+        .loss-history-subtitle {
+            margin: 0 0 var(--space-md);
+            font-size: 1.1rem;
+            color: var(--color-text-strong);
+        }
+
+        .large-loss-table td:last-child,
+        .large-loss-table th:last-child { text-align: right; }
+
+        .listed-updated {
+            margin: 0 0 var(--space-lg);
+            color: var(--color-text-muted);
+            font-size: 0.85rem;
+        }
+
+        .listed-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .listed-table th,
+        .listed-table td {
+            padding: 0.75rem 0.7rem;
+            text-align: left;
+        }
+
+        .listed-table thead { background: var(--color-table-heading); }
+        .listed-table th { color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase; }
+        .listed-table td { border-bottom: 1px solid var(--color-border); }
+        .listed-table th:first-child,
+        .listed-table td:first-child { width: 2rem; }
+        .listed-table tbody tr:last-child td { border-bottom: 0; }
+
+        .coverage {
+            color: var(--color-action);
+            white-space: nowrap;
+        }
+
+        .coverage::first-letter { color: var(--color-action); }
+
+        @media (max-width: 760px) {
+            .spotlight-header, .spotlight-grid { padding-inline: var(--space-lg); }
+            .spotlight-grid { grid-template-columns: minmax(0, 1fr); box-sizing: border-box; }
+            .spotlight-grid .panel { padding: var(--space-lg); }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="page-loading-overlay" class="page-loading-overlay" role="status" aria-live="polite" aria-hidden="true">
+        <div class="page-loading-card">
+            <span class="upload-spinner" aria-hidden="true"></span>
+            <span id="page-loading-message">Processing PDF...</span>
+        </div>
+    </div>
+
+    <main>
+        <header class="spotlight-header">
+            <h1 class="panel-title">Risk Spotlight</h1>
+        </header>
+
+        <div class="spotlight-grid">
+            <section class="panel" aria-labelledby="underwriting-flags-title">
+                <header class="panel-header">
+                    <h2 id="underwriting-flags-title" class="panel-title">Underwriting Flags</h2>
+                </header>
+                <ul class="flag-list">
+                    <li><span>Prior cancellation or non-renewal</span><span class="status clear">Clear</span></li>
+                    <li><span>Loss ratio exceeds 55%</span><span class="status review">Review</span></li>
+                    <li><span>Commercial auto operations</span><span class="status clear">Clear</span></li>
+                    <li><span>Open claims over $25,000</span><span class="status review">Review</span></li>
+                </ul>
+            </section>
+
+            <section class="panel premium-breakdown" aria-labelledby="premium-breakdown-title">
+                <header class="panel-header">
+                    <h2 id="premium-breakdown-title" class="panel-title">Premium Breakdown</h2>
+                </header>
+                <div class="premium-breakdown-header"><span>Charges</span><span>Amount</span></div>
+                <details class="premium-charge" name="premium-charges" open>
+                    <summary class="premium-charge-summary"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i><strong>Auto Liability Premium</strong><strong>+$14,898.32</strong></summary>
+                    <div class="premium-details">
+                        <div class="premium-detail"><span>Business State</span><span>California</span></div>
+                        <label class="premium-detail"><span>Loss Ratio</span><input type="text" value="0%" aria-label="Loss ratio"></label>
+                        <div class="premium-detail"><span>Age of newest vehicle</span><span>15</span></div>
+                        <div class="premium-detail"><span>Number of vehicles</span><span>1</span></div>
+                        <div class="premium-detail"><span>Number of drivers</span><span>0</span></div>
+                        <div class="premium-detail"><span>Number of CDL years of least experienced driver</span><span>0</span></div>
+                        <label class="premium-detail"><span>Drivers with 25% surcharge</span><input type="text" value="0" aria-label="Drivers with 25 percent surcharge"></label>
+                        <label class="premium-detail"><span>Drivers with 35% surcharge</span><input type="text" value="0" aria-label="Drivers with 35 percent surcharge"></label>
+                        <div class="premium-detail"><span>Number of drivers age 65 and older</span><span>0</span></div>
+                        <label class="premium-detail"><span>Crash Rating</span><input type="text" value="0" aria-label="Crash rating"></label>
+                        <label class="premium-detail"><span>Years of Authority</span><input type="text" value="5" aria-label="Years of authority"></label>
+                        <label class="premium-detail"><span>Number of CAB threshold alerts</span><input type="text" value="1" aria-label="Number of CAB threshold alerts"></label>
+                        <div class="premium-detail"><span>Intrastate operations only</span><span>false</span></div>
+                        <label class="premium-detail"><span>New Venture</span><select aria-label="New venture"><option>No</option><option>Yes</option></select></label>
+                        <label class="premium-detail"><span>Rating Tier</span><select aria-label="Rating tier"><option>Tier D</option><option>Tier C</option><option>Tier B</option></select></label>
+                        <div class="premium-detail"><span>Auto Liability premium per unit</span><span>14,898.32</span></div>
+                    </div>
+                </details>
+                <details class="premium-charge" name="premium-charges">
+                    <summary class="premium-charge-summary"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i><span>Auto Liability Policy Fee</span><strong>+$1,638.82</strong></summary>
+                    <div class="premium-details">
+                        <div class="premium-detail"><span>Policy Fee</span><span>$1,638.82</span></div>
+                    </div>
+                </details>
+                <details class="premium-charge" name="premium-charges">
+                    <summary class="premium-charge-summary"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i><span>Auto Liability Capital Contribution</span><strong>+$446.95</strong></summary>
+                    <div class="premium-details">
+                        <div class="premium-detail"><span>Capital Contribution</span><span>$446.95</span></div>
+                    </div>
+                </details>
+                <details class="premium-charge" name="premium-charges">
+                    <summary class="premium-charge-summary"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i><span>Auto Liability Premium Taxes</span><strong>+$661.49</strong></summary>
+                    <div class="premium-details">
+                        <div class="premium-detail"><span>Premium Taxes</span><span>$661.49</span></div>
+                    </div>
+                </details>
+            </section>
+
+            <section class="panel automated-premium" aria-labelledby="premium-adjustment-title">
+                <header class="panel-header">
+                    <h2 id="premium-adjustment-title" class="panel-title">Automated Premium</h2>
+                </header>
+                <div class="automated-premium-row">
+                    <strong>Auto Liability Premium</strong>
+                    <output class="automated-premium-value">$14,898.32</output>
+                </div>
+                <div class="automated-adjustment">
+                    <div class="automated-adjustment-summary"><span>Adjustment</span><span>$14,898.32</span><strong>0.00%</strong></div>
+                    <label class="visually-hidden" for="premium-adjustment-range">Premium adjustment percentage</label>
+                    <input id="premium-adjustment-range" type="range" min="-25" max="25" value="0">
+                </div>
+                <div class="automated-premium-row">
+                    <strong>Auto Liability Policy Fee</strong>
+                    <output class="automated-premium-value">$1,638.82</output>
+                </div>
+                <div class="automated-premium-row">
+                    <strong>Auto Liability Capital Contribution</strong>
+                    <output class="automated-premium-value">$446.95</output>
+                </div>
+                <div class="automated-premium-row">
+                    <strong>Auto Liability Premium Taxes</strong>
+                    <output>$661.49</output>
+                </div>
+                <div class="automated-premium-total"><span>Grand Total</span><span>$17,645.58</span></div>
+            </section>
+
+            <section class="panel loss-history-panel" aria-labelledby="loss-history-title">
+                <header class="panel-header">
+                    <h2 id="loss-history-title" class="panel-title">Loss History</h2>
+                    <div class="panel-actions">
+                        <button type="button" class="button"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Revise application</button>
+                        <button type="button" id="open-workbench" class="button" aria-haspopup="dialog" aria-controls="workbench-modal"><i class="fa-solid fa-toolbox" aria-hidden="true"></i> Workbench</button>
+                    </div>
+                </header>
+                <div class="loss-history-tabs" role="tablist" aria-label="Loss history views">
+                    <button type="button" class="loss-history-tab" role="tab" aria-selected="true" aria-controls="loss-summary" id="loss-summary-tab">Summary</button>
+                    <button type="button" class="loss-history-tab" role="tab" aria-selected="false" aria-controls="losses-by-year" id="losses-by-year-tab">Losses By Year</button>
+                    <button type="button" class="loss-history-tab" role="tab" aria-selected="false" aria-controls="large-losses" id="large-losses-tab">Large Losses</button>
+                    <button type="button" class="loss-history-tab" role="tab" aria-selected="false" aria-controls="all-losses" id="all-losses-tab">All Claims</button>
+                </div>
+                <div id="loss-summary" class="loss-history-tabpanel" role="tabpanel" aria-labelledby="loss-summary-tab">
+                    <p class="loss-history-insight">The insured reported six claims across the last three policy years, with $40,900 total incurred losses. The 2025 policy year accounts for the largest share of incurred loss ($26,400) and includes one open claim. Average reporting lag is 8 days, with the longest observed lag at 12 days. Loss frequency is trending downward, while the remaining reserve is concentrated in the most recent year.</p>
+                    <div class="loss-history-charts" aria-label="Loss history charts">
+                        <figure class="loss-chart">
+                            <figcaption>Incurred loss by policy year</figcaption>
+                            <div class="loss-bars" aria-hidden="true">
+                                <div class="loss-bar-group"><span class="loss-bar" style="height: 100%"></span></div>
+                                <div class="loss-bar-group"><span class="loss-bar" style="height: 46%"></span></div>
+                                <div class="loss-bar-group"><span class="loss-bar" style="height: 9%"></span></div>
+                            </div>
+                            <div class="loss-bar-labels"><span>2025<br>$26.4k</span><span>2024<br>$12.1k</span><span>2023<br>$2.4k</span></div>
+                        </figure>
+                        <figure class="loss-chart">
+                            <figcaption>Paid vs. reserve</figcaption>
+                            <div class="loss-bars" aria-hidden="true">
+                                <div class="loss-bar-group"><span class="loss-bar" style="height: 100%"></span><span class="loss-bar reserve" style="height: 35%"></span></div>
+                                <div class="loss-bar-group"><span class="loss-bar" style="height: 54%"></span><span class="loss-bar reserve" style="height: 10%"></span></div>
+                                <div class="loss-bar-group"><span class="loss-bar" style="height: 13%"></span><span class="loss-bar reserve" style="height: 0.25rem"></span></div>
+                            </div>
+                            <div class="loss-bar-labels"><span>2025</span><span>2024</span><span>2023</span></div>
+                        </figure>
+                    </div>
+                </div>
+                <div id="losses-by-year" class="loss-history-tabpanel" role="tabpanel" aria-labelledby="losses-by-year-tab" hidden>
+                <div class="loss-history-section">
+                    <h3 class="loss-history-subtitle">Losses By Year</h3>
+                    <table class="spotlight-table">
+                        <caption class="visually-hidden">Insurance history totals grouped by policy year</caption>
+                        <thead><tr><th scope="col">Policy Year</th><th scope="col">Insurer</th><th scope="col">Lines of Coverage</th><th scope="col"># Claims</th><th scope="col"># Open Claims</th><th scope="col">Avg Reporting Lag</th><th scope="col">Total Paid</th><th scope="col">Total Reserve</th><th scope="col" class="right-align">Total Incurred</th></tr></thead>
+                        <tbody>
+                            <tr><td>2025</td><td>Summit Casualty</td><td>Auto Liability, Cargo</td><td>3</td><td>1</td><td>9 days</td><td>$18,200</td><td>$8,200</td><td class="right-align">$26,400</td></tr>
+                            <tr><td>2024</td><td>Summit Casualty</td><td>Auto Liability, Cargo</td><td>2</td><td>0</td><td>6 days</td><td>$9,750</td><td>$2,350</td><td class="right-align">$12,100</td></tr>
+                            <tr><td>2023</td><td>Harbor Indemnity</td><td>Auto Liability</td><td>1</td><td>0</td><td>12 days</td><td>$2,400</td><td>$0</td><td class="right-align">$2,400</td></tr>
+                            <tr class="bold-row"><td>Total</td><td></td><td></td><td>6</td><td>1</td><td>8 days</td><td>$30,350</td><td>$10,550</td><td class="right-align">$40,900</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+                <div id="large-losses" class="loss-history-tabpanel" role="tabpanel" aria-labelledby="large-losses-tab" hidden>
+                <div class="loss-history-section">
+                    <h3 class="loss-history-subtitle">Large Losses</h3>
+                    <table class="spotlight-table large-loss-table">
+                        <caption class="visually-hidden">Large losses</caption>
+                        <thead><tr><th scope="col">Accident Date</th><th scope="col">Reported Date</th><th scope="col">Policy Year</th><th scope="col">Claimant / Description</th><th scope="col">Reporting Lag</th><th scope="col">Status</th><th scope="col">Total Incurred</th></tr></thead>
+                        <tbody>
+                            <tr><td>06/14/2025</td><td>06/23/2025</td><td>2025</td><td>Collision with third-party vehicle</td><td>9 days</td><td>Open</td><td>$18,750</td></tr>
+                            <tr><td>11/02/2024</td><td>11/08/2024</td><td>2024</td><td>Rear-end collision</td><td>6 days</td><td>Closed</td><td>$12,100</td></tr>
+                            <tr><td>08/21/2023</td><td>09/02/2023</td><td>2023</td><td>Cargo damage during transit</td><td>12 days</td><td>Closed</td><td>$2,400</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+                <div id="all-losses" class="loss-history-tabpanel" role="tabpanel" aria-labelledby="all-losses-tab" hidden>
+                    <table class="spotlight-table">
+                        <caption class="visually-hidden">All reported losses</caption>
+                        <thead><tr><th scope="col">Accident Date</th><th scope="col">Reported Date</th><th scope="col">Policy Year</th><th scope="col">Description</th><th scope="col">Reporting Lag</th><th scope="col">Status</th><th scope="col">Paid</th><th scope="col">Incurred</th></tr></thead>
+                        <tbody>
+                            <tr><td>06/14/2025</td><td>06/23/2025</td><td>2025</td><td>Collision with third-party vehicle</td><td>9 days</td><td>Open</td><td>$11,250</td><td>$18,750</td></tr>
+                            <tr><td>02/03/2025</td><td>02/15/2025</td><td>2025</td><td>Backing incident</td><td>12 days</td><td>Closed</td><td>$4,550</td><td>$4,550</td></tr>
+                            <tr><td>11/02/2024</td><td>11/08/2024</td><td>2024</td><td>Rear-end collision</td><td>6 days</td><td>Closed</td><td>$9,750</td><td>$12,100</td></tr>
+                            <tr><td>08/21/2023</td><td>09/02/2023</td><td>2023</td><td>Cargo damage during transit</td><td>12 days</td><td>Closed</td><td>$2,400</td><td>$2,400</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel listed-panel" aria-labelledby="drivers-title">
+                <header class="panel-header">
+                    <h2 id="drivers-title" class="panel-title">Listed Drivers</h2>
+                    <div class="panel-actions">
+                        <button type="button" class="button"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Revise application</button>
+                        <button type="button" class="button" aria-haspopup="dialog" aria-controls="workbench-modal"><i class="fa-solid fa-toolbox" aria-hidden="true"></i> Workbench</button>
+                    </div>
+                </header>
+                <p class="listed-updated">Last updated October 2, 2026 03:07 PM CDT</p>
+                <table class="listed-table">
+                    <caption class="visually-hidden">Listed drivers</caption>
+                    <thead><tr><th scope="col"></th><th scope="col">Name</th><th scope="col">License</th><th scope="col">Experience</th><th scope="col">Coverage</th></tr></thead>
+                    <tbody>
+                        <tr><td>01</td><td><strong>Marcus Alvarez</strong></td><td>CA – California A4829137</td><td>12 years</td><td class="coverage">☑ 9/30/2026</td></tr>
+                        <tr><td>02</td><td><strong>Erin Wallace</strong></td><td>TX – Texas 18472639</td><td>8 years</td><td class="coverage">☑ 9/30/2026</td></tr>
+                        <tr><td>03</td><td><strong>DeShawn Carter</strong></td><td>GA – Georgia C4582190</td><td>6 years</td><td class="coverage">☑ 9/30/2026</td></tr>
+                        <tr><td>04</td><td><strong>Priya Nanduri</strong></td><td>IL – Illinois N53682147</td><td>3 years</td><td class="coverage">☑ 9/30/2026</td></tr>
+                        <tr><td>05</td><td><strong>Colin Mercer</strong></td><td>OH – Ohio M6238145</td><td>18 years</td><td class="coverage">☑ 9/30/2026</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="panel listed-panel" aria-labelledby="vehicles-title">
+                <header class="panel-header">
+                    <h2 id="vehicles-title" class="panel-title">Listed Vehicles</h2>
+                    <div class="panel-actions">
+                        <button type="button" class="button"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Revise application</button>
+                        <button type="button" class="button" aria-haspopup="dialog" aria-controls="workbench-modal"><i class="fa-solid fa-toolbox" aria-hidden="true"></i> Workbench</button>
+                    </div>
+                </header>
+                <p class="listed-updated">Last updated October 2, 2026 03:07 PM CDT</p>
+                <table class="listed-table">
+                    <caption class="visually-hidden">Listed vehicles</caption>
+                    <thead><tr><th scope="col"></th><th scope="col">Year, Make, Model</th><th scope="col">VIN</th><th scope="col">Vehicle Class</th><th scope="col">Radius in Miles</th><th scope="col">Coverage</th></tr></thead>
+                    <tbody>
+                        <tr><td>01</td><td><strong>2023 Freightliner Cascadia 126</strong></td><td>1FUJHHDR8PLAA1842</td><td>Class 8: over 33,000 lbs</td><td>250</td><td class="coverage">☑ 9/30/2026</td></tr>
+                        <tr><td>02</td><td><strong>2022 Kenworth T680</strong></td><td>1XKYD49X7NJAA5276</td><td>Class 8: over 33,000 lbs</td><td>300</td><td class="coverage">☑ 9/30/2026</td></tr>
+                        <tr><td>03</td><td><strong>2021 Peterbilt 579</strong></td><td>1XPBDP9X8MDRA6391</td><td>Class 8: over 33,000 lbs</td><td>200</td><td class="coverage">☑ 9/30/2026</td></tr>
+                        <tr><td>04</td><td><strong>2020 Ford F-350 XL</strong></td><td>1FT8W3BT7LED48215</td><td>Class 3: 10,001–14,000 lbs</td><td>150</td><td class="coverage">☑ 9/30/2026</td></tr>
+                        <tr><td>05</td><td><strong>2024 Great Dane Everest Trailer</strong></td><td>1GRAA0627RLBA7314</td><td>Trailer: over 10,000 lbs</td><td>300</td><td class="coverage">☑ 9/30/2026</td></tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </main>
+
+    <dialog id="workbench-modal" class="workbench-modal" aria-labelledby="workbench-title">
+        <header class="panel-header">
+            <h2 id="workbench-title" class="panel-title">Underwriting Workbench</h2>
+            <div class="panel-actions workbench-heading-actions">
+                <button type="button" id="discard-workbench-changes" class="button workbench-discard"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i> Clear modifications</button>
+                <button type="button" id="save-underwriter-modifications" class="button workbench-save"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Save underwriter modifications</button>
+                <button type="button" id="close-workbench" class="button icon-button" aria-label="Close Workbench" title="Close Workbench" autofocus><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            </div>
+        </header>
+        <div class="workbench-body">
+            <section id="workbench-context-column" class="workbench-column workbench-context-column" aria-label="Workbench panel">
+                <header class="workbench-context-toolbar">
+                    <label for="workbench-panel-select" class="visually-hidden">Workbench view</label>
+                    <select id="workbench-panel-select"></select>
+                </header>
+                <div class="workbench-context-content">
+                <form id="workbench-insurance-form" class="workbench-insurance-form" aria-label="Insurance History" data-workbench-view="Loss History">
+                    <div class="policy-list">
+                        <article class="policy-entry form-entry" aria-labelledby="workbench-policy-2025">
+                            <header class="policy-entry-header">
+                                <h5 id="workbench-policy-2025" class="policy-title">2025 - Summit Casualty</h5>
+                                <button type="button" class="button icon-button policy-menu-button" popovertarget="workbench-policy-actions-2025" aria-label="Policy actions" title="Policy actions"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i></button>
+                                <div id="workbench-policy-actions-2025" class="policy-actions" popover aria-label="Policy actions">
+                                    <button type="button" class="button policy-button" disabled><i class="fa-solid fa-square-plus" aria-hidden="true"></i> Add claim</button>
+                                    <button type="button" class="button policy-button" disabled><i class="fa-solid fa-clone" aria-hidden="true"></i> Add prior policy</button>
+                                    <button type="button" class="button policy-button" disabled><i class="fa-solid fa-clone" aria-hidden="true"></i> Add renewal policy</button>
+                                    <button type="button" class="button remove-button" disabled><i class="fa-solid fa-square-xmark" aria-hidden="true"></i> Remove policy</button>
+                                </div>
+                            </header>
+                            <div class="form-row">
+                                <div class="form-field workbench-coverage-field"><label for="workbench-coverage-2025">Lines of Coverage</label><input id="workbench-coverage-2025" type="text" value="Auto Liability, Cargo"></div>
+                                <div class="form-field"><label for="workbench-effective-2025">Effective Date</label><input id="workbench-effective-2025" type="date" value="2025-01-01"></div>
+                                <div class="form-field"><label for="workbench-expiration-2025">Expiration Date</label><input id="workbench-expiration-2025" type="date" value="2026-01-01"></div>
+                                <div class="form-field"><label for="workbench-insurer-2025">Insurer</label><input id="workbench-insurer-2025" type="text" value="Summit Casualty"></div>
+                                <div class="form-field"><label for="workbench-premium-2025">Policy Premium</label><input id="workbench-premium-2025" type="text" value="$14,898.32"></div>
+                                <div class="form-field"><label for="workbench-number-2025">Policy Number</label><input id="workbench-number-2025" type="text" value="SUMMIT-2025-01"></div>
+                            </div>
+                            <section class="claims-form open" aria-labelledby="workbench-claims-title-2025">
+                                <header class="claims-form-header"><h6 id="workbench-claims-title-2025" class="claims-form-title">Claims on policy</h6></header>
+                                <div class="claim-list" tabindex="0" role="region" aria-label="2025 claims table">
+                                    <div class="claim-table-header">
+                                        <div>Incident Date</div><div>Status</div><div>Incurred</div><div>ALAE</div><div>Paid</div><div>Reserved</div><div>Recovered</div><div>Details</div><div class="claim-action-header"></div>
+                                    </div>
+                                    <fieldset class="claim-entry">
+                                        <legend class="visually-hidden">2025 claim</legend>
+                                        <div class="claim-field"><label for="workbench-incident-2025">Incident Date</label><input id="workbench-incident-2025" type="date" value="2025-06-14"></div>
+                                        <div class="claim-field"><label for="workbench-status-2025">Status</label><input id="workbench-status-2025" type="text" value="Open"></div>
+                                        <div class="claim-field"><label for="workbench-incurred-2025">Incurred</label><input id="workbench-incurred-2025" type="text" value="$18,750.00"></div>
+                                        <div class="claim-field"><label for="workbench-alae-2025">ALAE</label><input id="workbench-alae-2025" type="text" value="$500.00"></div>
+                                        <div class="claim-field"><label for="workbench-paid-2025">Paid</label><input id="workbench-paid-2025" type="text" value="$11,250.00"></div>
+                                        <div class="claim-field"><label for="workbench-reserved-2025">Reserved</label><input id="workbench-reserved-2025" type="text" value="$7,500.00"></div>
+                                        <div class="claim-field"><label for="workbench-recovered-2025">Recovered</label><input id="workbench-recovered-2025" type="text" value="$0.00"></div>
+                                        <div class="claim-field"><label for="workbench-details-2025">Details</label><input id="workbench-details-2025" type="text" value="Collision with third-party vehicle"></div>
+                                        <div class="claim-field"><button type="button" class="button claim-remove" aria-label="Remove claim" title="Remove claim" disabled><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+                                    </fieldset>
+                                </div>
+                            </section>
+                        </article>
+                        <article class="policy-entry form-entry" aria-labelledby="workbench-policy-2024">
+                            <header class="policy-entry-header">
+                                <h5 id="workbench-policy-2024" class="policy-title">2024 - Summit Casualty</h5>
+                                <button type="button" class="button icon-button policy-menu-button" popovertarget="workbench-policy-actions-2024" aria-label="Policy actions" title="Policy actions"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i></button>
+                                <div id="workbench-policy-actions-2024" class="policy-actions" popover aria-label="Policy actions">
+                                    <button type="button" class="button policy-button" disabled><i class="fa-solid fa-square-plus" aria-hidden="true"></i> Add claim</button>
+                                    <button type="button" class="button policy-button" disabled><i class="fa-solid fa-clone" aria-hidden="true"></i> Add prior policy</button>
+                                    <button type="button" class="button policy-button" disabled><i class="fa-solid fa-clone" aria-hidden="true"></i> Add renewal policy</button>
+                                    <button type="button" class="button remove-button" disabled><i class="fa-solid fa-square-xmark" aria-hidden="true"></i> Remove policy</button>
+                                </div>
+                            </header>
+                            <div class="form-row">
+                                <div class="form-field workbench-coverage-field"><label for="workbench-coverage-2024">Lines of Coverage</label><input id="workbench-coverage-2024" type="text" value="Auto Liability, Cargo"></div>
+                                <div class="form-field"><label for="workbench-effective-2024">Effective Date</label><input id="workbench-effective-2024" type="date" value="2024-01-01"></div>
+                                <div class="form-field"><label for="workbench-expiration-2024">Expiration Date</label><input id="workbench-expiration-2024" type="date" value="2025-01-01"></div>
+                                <div class="form-field"><label for="workbench-insurer-2024">Insurer</label><input id="workbench-insurer-2024" type="text" value="Summit Casualty"></div>
+                                <div class="form-field"><label for="workbench-premium-2024">Policy Premium</label><input id="workbench-premium-2024" type="text" value="$13,800.00"></div>
+                                <div class="form-field"><label for="workbench-number-2024">Policy Number</label><input id="workbench-number-2024" type="text" value="SUMMIT-2024-01"></div>
+                            </div>
+                            <section class="claims-form open" aria-labelledby="workbench-claims-title-2024">
+                                <header class="claims-form-header"><h6 id="workbench-claims-title-2024" class="claims-form-title">Claims on policy</h6></header>
+                                <div class="claim-list" tabindex="0" role="region" aria-label="2024 claims table">
+                                    <div class="claim-table-header">
+                                        <div>Incident Date</div><div>Status</div><div>Incurred</div><div>ALAE</div><div>Paid</div><div>Reserved</div><div>Recovered</div><div>Details</div><div class="claim-action-header"></div>
+                                    </div>
+                                    <fieldset class="claim-entry">
+                                        <legend class="visually-hidden">2024 claim</legend>
+                                        <div class="claim-field"><label for="workbench-incident-2024">Incident Date</label><input id="workbench-incident-2024" type="date" value="2024-11-02"></div>
+                                        <div class="claim-field"><label for="workbench-status-2024">Status</label><input id="workbench-status-2024" type="text" value="Closed"></div>
+                                        <div class="claim-field"><label for="workbench-incurred-2024">Incurred</label><input id="workbench-incurred-2024" type="text" value="$12,100.00"></div>
+                                        <div class="claim-field"><label for="workbench-alae-2024">ALAE</label><input id="workbench-alae-2024" type="text" value="$350.00"></div>
+                                        <div class="claim-field"><label for="workbench-paid-2024">Paid</label><input id="workbench-paid-2024" type="text" value="$9,750.00"></div>
+                                        <div class="claim-field"><label for="workbench-reserved-2024">Reserved</label><input id="workbench-reserved-2024" type="text" value="$2,350.00"></div>
+                                        <div class="claim-field"><label for="workbench-recovered-2024">Recovered</label><input id="workbench-recovered-2024" type="text" value="$0.00"></div>
+                                        <div class="claim-field"><label for="workbench-details-2024">Details</label><input id="workbench-details-2024" type="text" value="Rear-end collision"></div>
+                                        <div class="claim-field"><button type="button" class="button claim-remove" aria-label="Remove claim" title="Remove claim" disabled><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+                                    </fieldset>
+                                </div>
+                            </section>
+                        </article>
+                    </div>
+                </form>
+                <div id="workbench-drivers" class="workbench-listed-view" data-workbench-view="Listed Drivers" hidden></div>
+                <div id="workbench-vehicles" class="workbench-listed-view" data-workbench-view="Listed Vehicles" hidden></div>
+                </div>
+                <footer id="workbench-policy-footer" class="workbench-context-footer" aria-label="Policy actions">
+                    <button type="button" class="button policy-button" disabled><i class="fa-solid fa-square-plus" aria-hidden="true"></i> Add prior policy information</button>
+                </footer>
+            </section>
+            <div id="workbench-divider" class="workbench-divider" role="separator" tabindex="0" aria-label="Resize Workbench columns" aria-orientation="vertical" aria-valuemin="25" aria-valuemax="75" aria-valuenow="60" aria-controls="workbench-context-column workbench-premium-column"></div>
+            <section id="workbench-premium-column" class="workbench-column" aria-labelledby="workbench-premium-title">
+                <h3 id="workbench-premium-title" class="workbench-subheading">Premium Outcome</h3>
+                <div id="workbench-assistant">
+                    <p>The recent loss history includes an open collision claim with $7,500 in outstanding reserves, while the prior policy year records a closed rear-end collision. The open claim warrants a current valuation review to assess the potential for further development. Confirm the loss amounts, coverage details, and reporting history before finalizing the premium outcome.</p>
+                </div>
+                <div id="workbench-premium-breakdown" class="workbench-premium-breakdown"></div>
+            </section>
+        </div>
+    </dialog>
+
+    <script src="scripts/07-policy-menu.js"></script>
+    <script>
+        const workbenchModal = document.getElementById('workbench-modal');
+        const workbenchBody = document.querySelector('.workbench-body');
+        const workbenchDivider = document.getElementById('workbench-divider');
+
+        function resizeWorkbenchColumns(percent) {
+            const split = Math.min(75, Math.max(25, percent));
+            workbenchBody.style.setProperty('--workbench-left-width', `${split}%`);
+            workbenchDivider.setAttribute('aria-valuenow', String(Math.round(split)));
+            workbenchDivider.setAttribute('aria-valuetext', `${Math.round(split)}% left, ${Math.round(100 - split)}% right`);
+        }
+
+        workbenchDivider.addEventListener('pointerdown', (event) => {
+            if (event.button !== 0) return;
+            event.preventDefault();
+            workbenchDivider.focus();
+            workbenchDivider.setPointerCapture(event.pointerId);
+            workbenchBody.classList.add('is-resizing');
+        });
+        workbenchDivider.addEventListener('pointermove', (event) => {
+            if (!workbenchDivider.hasPointerCapture(event.pointerId)) return;
+            const bounds = workbenchBody.getBoundingClientRect();
+            resizeWorkbenchColumns((event.clientX - bounds.left) / bounds.width * 100);
+        });
+        workbenchDivider.addEventListener('pointerup', (event) => {
+            if (workbenchDivider.hasPointerCapture(event.pointerId)) workbenchDivider.releasePointerCapture(event.pointerId);
+        });
+        workbenchDivider.addEventListener('lostpointercapture', () => workbenchBody.classList.remove('is-resizing'));
+        workbenchModal.addEventListener('close', () => workbenchBody.classList.remove('is-resizing'));
+        workbenchDivider.addEventListener('dblclick', () => resizeWorkbenchColumns(60));
+        workbenchDivider.addEventListener('keydown', (event) => {
+            const split = parseFloat(workbenchBody.style.getPropertyValue('--workbench-left-width')) || 60;
+            const step = event.shiftKey ? 10 : 2;
+            const nextSplit = { ArrowLeft: split - step, ArrowRight: split + step, Home: 25, End: 75 }[event.key];
+            if (nextSplit === undefined) return;
+            event.preventDefault();
+            resizeWorkbenchColumns(nextSplit);
+        });
+        const workbenchPanelSelect = document.getElementById('workbench-panel-select');
+        const workbenchOpeners = document.querySelectorAll('button[aria-controls="workbench-modal"]');
+        workbenchOpeners.forEach((button) => {
+            const panel = button.closest('.panel');
+            const panelTitle = panel.querySelector('.panel-title').textContent;
+            workbenchPanelSelect.add(new Option(panelTitle, panelTitle));
+            const table = panel.querySelector('.listed-table');
+            const target = panelTitle === 'Listed Drivers' ? document.getElementById('workbench-drivers') : document.getElementById('workbench-vehicles');
+            if (table) target.append(table.cloneNode(true));
+        });
+
+        function switchWorkbenchView(panelTitle) {
+            document.querySelectorAll('[data-workbench-view]').forEach((view) => {
+                view.hidden = view.dataset.workbenchView !== panelTitle;
+            });
+            document.getElementById('workbench-policy-footer').hidden = panelTitle !== 'Loss History';
+            workbenchPanelSelect.value = panelTitle;
+            document.querySelector('.workbench-context-content').scrollTop = 0;
+        }
+
+        workbenchPanelSelect.addEventListener('change', () => switchWorkbenchView(workbenchPanelSelect.value));
+        document.getElementById('workbench-insurance-form').addEventListener('submit', (event) => event.preventDefault());
+        const workbenchPremiumBreakdown = document.getElementById('workbench-premium-breakdown');
+        document.querySelectorAll('.premium-breakdown > .premium-breakdown-header, .premium-breakdown > .premium-charge').forEach((element) => {
+            const clone = element.cloneNode(true);
+            if (clone.matches('details')) {
+                clone.name = 'workbench-premium-charges';
+                clone.open = false;
+            }
+            workbenchPremiumBreakdown.append(clone);
+        });
+        workbenchOpeners.forEach((button) => {
+            button.addEventListener('click', () => {
+                const panelTitle = button.closest('.panel').querySelector('.panel-title').textContent;
+            switchWorkbenchView(panelTitle);
+                workbenchModal.showModal();
+            });
+        });
+        document.getElementById('close-workbench').addEventListener('click', () => workbenchModal.close());
+
+        document.querySelectorAll('.loss-history-tab').forEach((tab) => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.loss-history-tab').forEach((item) => item.setAttribute('aria-selected', item === tab ? 'true' : 'false'));
+                document.querySelectorAll('.loss-history-tabpanel').forEach((panel) => {
+                    panel.hidden = panel.id !== tab.getAttribute('aria-controls');
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

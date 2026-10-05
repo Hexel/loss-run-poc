@@ -25,7 +25,9 @@
 
         <section id="upload-loss-run" class="panel double-panel backless" aria-labelledby="upload-loss-run-title">
             <div class="column">
-                <h2 id="upload-loss-run-title" class="panel-title">Upload Loss Run</h2>
+                <header class="panel-header">
+                    <h2 id="upload-loss-run-title" class="panel-title">Upload Loss Run</h2>
+                </header>
                 <p>Have a loss run file? Use the button below to upload and automatically populate your insurance
                     history.
                 </p>
@@ -69,18 +71,20 @@
         </section>
 
         <dialog id="file-preview-modal" class="file-preview-modal" aria-labelledby="file-preview-modal-title">
-            <div class="file-preview-modal-header">
+            <header class="file-preview-modal-header">
                 <h2 id="file-preview-modal-title">Loss run file preview</h2>
                 <button type="button" id="close-preview" class="button preview-button icon-button" aria-label="Close file preview" title="Close file preview">
                     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                 </button>
-            </div>
+            </header>
             <iframe id="file-preview-modal-frame" title="Loss run file preview"></iframe>
         </dialog>
 
         <form id="insurance-history-form" method="post" action="/submit" aria-labelledby="insurance-history-title">
             <input type="hidden" name="lossRunData" value="" />
-            <h2 id="insurance-history-title" class="panel-title">Insurance History</h2>
+            <header class="panel-header">
+                <h2 id="insurance-history-title" class="panel-title">Insurance History</h2>
+            </header>
             <p id="tip-for-policy-list">Does the insured have any prior policies? Click the button below to start
                 inputting prior policy information, starting with the most recent.</p>
 
@@ -92,7 +96,9 @@
         </form>
 
         <section id="insurance-history-summary-panel" class="panel faded" aria-labelledby="summary-title">
-            <h2 id="summary-title" class="panel-title">Summary By Year</h2>
+            <header class="panel-header">
+                <h2 id="summary-title" class="panel-title">Summary By Year</h2>
+            </header>
             <p id="tip-for-insurance-history">Input policy and loss information above to see a summary by year.</p>
             <div class="table-scroll">
                 <table id="insurance-history-summary-table" class="summary-table">
@@ -115,7 +121,9 @@
         </section>
 
         <section id="large-losses" class="panel faded" aria-labelledby="large-losses-title">
-            <h2 id="large-losses-title" class="panel-title">Large Losses</h2>
+            <header class="panel-header">
+                <h2 id="large-losses-title" class="panel-title">Large Losses</h2>
+            </header>
             <p id="tip-for-large-losses">Input policy and loss information above to see a list of large losses.</p>
             <div id="large-losses-list" aria-live="polite"></div>
         </section>
@@ -132,6 +140,7 @@
     <script src="scripts/04-views.js"></script>
     <script src="scripts/05-events.js"></script>
     <script src="scripts/06-fixture.js"></script>
+    <script src="scripts/07-policy-menu.js"></script>
 </body>
 
 </html>

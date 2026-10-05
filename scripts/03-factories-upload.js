@@ -11,6 +11,13 @@ function createPolicyEntry(policyIndex, data = {}) {
   policy.innerHTML = `
                 <header class="policy-entry-header">
                     <h3 class="policy-title">${getPolicyTitle(data)}</h3>
+                  <button type="button" class="button icon-button policy-menu-button" popovertarget="policy-actions-${policyIndex}" aria-label="Policy actions" title="Policy actions"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i></button>
+                  <div id="policy-actions-${policyIndex}" class="policy-actions" popover aria-label="Policy actions">
+                    <button type="button" class="button policy-button add-claims-button"><i class="fa-solid fa-square-plus" aria-hidden="true"></i> Add claim</button>
+                    <button type="button" class="button policy-button add-prior-policy"><i class="fa-solid fa-clone" aria-hidden="true"></i> Add prior policy</button>
+                    <button type="button" class="button policy-button add-renewal-policy"><i class="fa-solid fa-clone" aria-hidden="true"></i> Add renewal policy</button>
+                    <button type="button" class="button remove-button remove-policy" aria-label="Remove policy"><i class="fa-solid fa-square-xmark" aria-hidden="true"></i> Remove policy</button>
+                  </div>
                 </header>
                 <div class="policy-row form-row">
                     <div class="coverage-group form-field">
@@ -61,13 +68,6 @@ function createPolicyEntry(policyIndex, data = {}) {
                         <label for="policy-number-${policyIndex}">Policy Number</label>
                         <input type="text" id="policy-number-${policyIndex}" name="policies[${policyIndex}][policyNumber]" value="${data.policyNumber || ""}" placeholder="Policy Number">
                     </div>
-                </div>
-
-                <div class="policy-actions">
-                    <button type="button" class="button policy-button add-claims-button"><i class="fa-solid fa-square-plus" aria-hidden="true"></i> Add claim</button>
-                    <button type="button" class="button policy-button add-prior-policy"><i class="fa-solid fa-clone" aria-hidden="true"></i> Add prior policy</button>
-                    <button type="button" class="button policy-button add-renewal-policy"><i class="fa-solid fa-clone" aria-hidden="true"></i> Add renewal policy</button>
-                    <button type="button" class="button remove-button remove-policy" aria-label="Remove policy"><i class="fa-solid fa-square-xmark" aria-hidden="true"></i> Remove policy</button>
                 </div>
 
                 <section class="claims-form" aria-labelledby="claims-title-${policyIndex}">
