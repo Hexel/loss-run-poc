@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loss History Panel</title>
+    <title>Experience Workbench</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="styles/reset.css">
     <link rel="stylesheet" href="styles/theme.css">
@@ -95,6 +95,14 @@
                     aria-hidden="true"></i> Add prior policy information</button>
         </form>
 
+        <section id="large-losses" class="panel faded" aria-labelledby="large-losses-title">
+            <header class="panel-header">
+                <h2 id="large-losses-title" class="panel-title">Large Losses</h2>
+            </header>
+            <p id="tip-for-large-losses">Input policy and loss information above to see a list of large losses.</p>
+            <div id="large-losses-list" aria-live="polite"></div>
+        </section>
+
         <section id="insurance-history-summary-panel" class="panel faded" aria-labelledby="summary-title">
             <header class="panel-header">
                 <h2 id="summary-title" class="panel-title">Summary By Year</h2>
@@ -108,25 +116,39 @@
                             <th>Policy Year</th>
                             <th>Insurer</th>
                             <th>Lines of Coverage</th>
+                            <th># Units</th>
                             <th># Claims</th>
                             <th># Open Claims</th>
                             <th title="Average days from claim incident date to reported date, excluding claims with missing dates">Avg Reporting Lag</th>
                             <th>Total Paid</th>
                             <th>Total Reserve</th>
                             <th>Total Incurred</th>
+                            <th>Total Premium</th>
+                            <th>Undeveloped Loss Ratio</th>
+                            <th>LDF</th>
+                            <th>Developed Loss Ratio</th>
                         </tr>
                     </thead>
                     <tbody id="insurance-history-summary-body"></tbody>
+                    <tfoot id="insurance-history-summary-foot"></tfoot>
                 </table>
+                <div class="summary-charts">
+                    <div class="summary-chart"><h3>Average Reporting Lag</h3><div id="average-reporting-lag-chart" role="img" aria-label="Average Reporting Lag line chart"></div></div>
+                    <div class="summary-chart"><h3>Loss Cost Per Unit</h3><div id="loss-cost-per-unit-chart" role="img" aria-label="Loss Cost Per Unit line chart">Enter units for a policy year to see loss cost per unit.</div></div>
+                </div>
+                <div class="summary-info-boxes">
+                    <div class="summary-info-box">
+                        <h3>4-year Average Reporting Lag</h3>
+                        <p id="average-reporting-lag">—</p>
+                        <span>Equal-weight average of yearly reporting lags for the latest four policy years. Claims missing either date and years with no dated claims are excluded.</span>
+                    </div>
+                    <div class="summary-info-box">
+                        <h3>Loss Cost Per Unit</h3>
+                        <p id="loss-cost-per-unit">—</p>
+                        <span>X-year total incurred divided by the X-year total units.</span>
+                    </div>
+                </div>
             </div>
-        </section>
-
-        <section id="large-losses" class="panel faded" aria-labelledby="large-losses-title">
-            <header class="panel-header">
-                <h2 id="large-losses-title" class="panel-title">Large Losses</h2>
-            </header>
-            <p id="tip-for-large-losses">Input policy and loss information above to see a list of large losses.</p>
-            <div id="large-losses-list" aria-live="polite"></div>
         </section>
 
         <footer id="finale">

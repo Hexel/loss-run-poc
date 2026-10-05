@@ -4,7 +4,58 @@ const { test, expect } = require('@playwright/test');
 
 const pageUrl = (fileName) => pathToFileURL(path.resolve(__dirname, '..', fileName)).href;
 
+test('Experience references resolve and tabs switch', async ({ page }) => {
+    await page.goto(pageUrl('spotlight.html'));
+    const panel = page.getByRole('region', { name: 'Experience', exact: true });
+    await expect(panel).toHaveAttribute('aria-labelledby', 'experience-title');
+    const missingReferences = await page.locator('[aria-labelledby], [aria-controls], [popovertarget], a[href^="#"]').evaluateAll(elements => {
+        return elements.flatMap(element => {
+            const references = ['aria-labelledby', 'aria-controls', 'popovertarget'].flatMap(attribute =>
+                (element.getAttribute(attribute) || '').split(/\s+/).filter(Boolean)
+            );
+            const anchor = element.getAttribute('href');
+            if (anchor && anchor.length > 1) references.push(anchor.slice(1));
+            return references.filter(reference => !element.ownerDocument.getElementById(reference));
+        });
+    });
+    expect(missingReferences).toEqual([]);
+    for (const tab of await panel.getByRole('tab').all()) {
+        await tab.click();
+        await expect(tab).toHaveAttribute('aria-selected', 'true');
+        await expect(page.locator(`#${await tab.getAttribute('aria-controls')}`)).toBeVisible();
+        await expect(panel.getByRole('tabpanel')).toHaveCount(1);
+    }
+});
+
 for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    test(`loss charts show policy years and dollar costs at ${viewport.width}px`, async ({ page }) => {
+        await page.setViewportSize(viewport);
+        await page.goto(pageUrl('spotlight.html'));
+        const charts = page.locator('.experience-charts svg');
+        await expect(charts).toHaveCount(2);
+        await expect(page.locator('.loss-bars')).toHaveCount(0);
+        for (const chart of await charts.all()) {
+            await expect(chart).toBeVisible();
+            await expect(chart).toHaveAttribute('role', 'img');
+            await expect(chart.locator('text', { hasText: 'Policy year' })).toHaveCount(1);
+            await expect(chart.locator('text', { hasText: 'Loss cost ($)' })).toHaveCount(1);
+            const years = await chart.locator('text').filter({ hasText: /^202[345]$/ }).allTextContents();
+            expect(years).toEqual(['2023', '2024', '2025']);
+            const bounds = await chart.boundingBox();
+            expect(bounds.x).toBeGreaterThanOrEqual(0);
+            expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width);
+            for (const point of await chart.locator('circle').all()) {
+                const label = await point.locator('title').textContent();
+                const amount = Number(label.match(/\$([\d,]+)/)[1].replaceAll(',', ''));
+                expect(Number(await point.getAttribute('cy'))).toBeCloseTo(210 - amount / 30000 * 170, 2);
+            }
+        }
+        await expect(charts.first().locator('circle')).toHaveCount(3);
+        await expect(charts.last().locator('circle')).toHaveCount(6);
+        await expect(charts.last().locator('.chart-line.chart-reserve')).toHaveCSS('stroke-dasharray', '6px, 5px');
+        await expect(page.locator('.chart-legend')).toHaveText('PaidReserve');
+    });
+
     test(`workbench column divider resizes and resets at ${viewport.width}px`, async ({ page }) => {
         await page.setViewportSize(viewport);
         await page.goto(pageUrl('spotlight.html'));
@@ -100,7 +151,7 @@ test('all page panels use header toolbars', async ({ page }) => {
 });
 
 for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
-    for (const panelName of ['Loss History', 'Listed Drivers', 'Listed Vehicles']) {
+    for (const panelName of ['Experience', 'Listed Drivers', 'Listed Vehicles']) {
     test(`${panelName} workbench fills viewport and closes at ${viewport.width}px`, async ({ page }) => {
         await page.setViewportSize(viewport);
         await page.goto(pageUrl('spotlight.html'));
@@ -115,7 +166,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
         expect(await dialog.boundingBox()).toEqual({ x: 0, y: 0, ...viewport });
         const panelSelect = dialog.getByRole('combobox', { name: 'Workbench view', exact: true });
         await expect(panelSelect).toHaveValue(panelName);
-        await expect(panelSelect.locator('option')).toHaveText(['Loss History', 'Listed Drivers', 'Listed Vehicles']);
+        await expect(panelSelect.locator('option')).toHaveText(['Experience', 'Listed Drivers', 'Listed Vehicles']);
         await expect(dialog.getByRole('heading', { name: 'Premium Outcome', exact: true })).toBeVisible();
         const contextColumn = dialog.getByRole('region', { name: 'Workbench panel', exact: true });
         await expect(contextColumn).toHaveCSS('background-color', 'rgb(38, 40, 43)');
@@ -126,13 +177,13 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
         expect(rightColumn.y).toEqual(leftColumn.y);
         expect(rightColumn.x).toBeCloseTo(leftColumn.x + leftColumn.width, 0);
         await expect(dialog.locator('iframe')).toHaveCount(0);
-        if (panelName !== 'Loss History') {
+        if (panelName !== 'Experience') {
             const activeView = dialog.locator(`[data-workbench-view="${panelName}"]`);
             await expect(activeView).toBeVisible();
             await expect(activeView.locator('tbody tr')).toHaveCount(5);
             await expect(dialog.locator('#workbench-insurance-form')).not.toBeVisible();
         }
-        await panelSelect.selectOption('Loss History');
+        await panelSelect.selectOption('Experience');
         const insuranceForm = dialog.getByRole('form', { name: 'Insurance History', exact: true });
         await expect(insuranceForm).toBeVisible();
         const columnFooter = contextColumn.locator('.workbench-context-footer');
@@ -150,7 +201,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
             await expect(activeView).toBeVisible();
             await expect(activeView.locator('tbody tr')).toHaveCount(5);
         }
-        await panelSelect.selectOption('Loss History');
+        await panelSelect.selectOption('Experience');
         await expect(insurerInput).toHaveValue('Edited Summit Casualty');
         await insurerInput.fill('Summit Casualty');
         await expect(insuranceForm.locator('.policy-entry')).toHaveCount(2);

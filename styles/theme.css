@@ -31,7 +31,7 @@
             --claim-control-height: 32px;
             --policy-action-height: 34px;
             --claim-action-width: 36px;
-            --claim-grid-columns: minmax(10rem, 1.2fr) minmax(8rem, 0.8fr) repeat(5, minmax(8rem, 1fr)) minmax(14rem, 1.4fr) var(--claim-action-width);
+            --claim-grid-columns: repeat(2, minmax(10rem, 1.2fr)) minmax(8rem, 0.8fr) repeat(5, minmax(8rem, 1fr)) minmax(14rem, 1.4fr) var(--claim-action-width);
             --content-width: 1100px;
             --shadow-panel: 0 1px 8px rgba(0, 0, 0, 0.08);
             --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.06);

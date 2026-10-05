@@ -10,6 +10,7 @@ const seedPolicies = [
     claims: [
       {
         incidentDate: "2022-06-10",
+        reportedDate: "2022-06-12",
         status: "open",
         incurred: "15000",
         alae: "500",
@@ -20,6 +21,7 @@ const seedPolicies = [
       },
       {
         incidentDate: "2022-10-11",
+        reportedDate: "2022-10-15",
         status: "closed",
         incurred: "26000",
         alae: "1000",
@@ -40,6 +42,7 @@ const seedPolicies = [
     claims: [
       {
         incidentDate: "2023-02-05",
+        reportedDate: "2023-02-10",
         status: "open",
         incurred: "5000",
         alae: "200",
@@ -50,6 +53,7 @@ const seedPolicies = [
       },
       {
         incidentDate: "2023-11-22",
+        reportedDate: "2023-11-30",
         status: "open",
         incurred: "30000",
         alae: "1200",
@@ -70,6 +74,7 @@ const seedPolicies = [
     claims: [
       {
         incidentDate: "2024-04-14",
+        reportedDate: "2024-04-20",
         status: "closed",
         incurred: "18000",
         alae: "600",
@@ -90,6 +95,7 @@ const seedPolicies = [
     claims: [
       {
         incidentDate: "2025-03-12",
+        reportedDate: "2025-03-22",
         status: "open",
         incurred: "40000",
         alae: "2000",
@@ -101,6 +107,14 @@ const seedPolicies = [
     ],
   },
 ];
+
+const seedLdfByYear = {
+  2025: "2.0",
+  2024: "1.75",
+  2023: "1.5",
+  2022: "1.25",
+  2021: "1.0",
+};
 
 function seedTestData() {
   clearPolicyList();
@@ -117,6 +131,15 @@ function seedTestData() {
     policyNumber += 1;
   });
   refreshDerivedViews();
+  document.querySelectorAll("#insurance-history-summary-body .units-input").forEach((input, index) => {
+    input.value = [1, 2, 3, 4][index] || 1;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  document.querySelectorAll("#insurance-history-summary-body .ldf-input").forEach((input) => {
+    const year = input.closest("tr").cells[0].textContent;
+    input.value = seedLdfByYear[year] || "1.0";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
 }
 
 initializeApp();

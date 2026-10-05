@@ -201,14 +201,198 @@ body:has(.workbench-modal[open]) {
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.82rem;
+  vertical-align: bottom;
 }
 
 .panel .summary-table td {
   background: var(--color-surface);
 }
 
+.panel .summary-table tfoot th,
+.panel .summary-table tfoot td {
+  background: var(--color-table-heading);
+}
+
 #insurance-history-summary-table {
   display: none;
+}
+
+sup {
+  position: relative;
+  top: -0.35em;
+  font-size: 0.7em;
+  line-height: 0;
+}
+
+.units-input,
+.ldf-input {
+  width: 8ch;
+}
+
+.summary-override,
+.premium-override {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.editable-summary-cell {
+  position: relative;
+}
+
+.summary-edit {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 0.65em;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.editable-summary-cell:hover .summary-edit,
+.editable-summary-cell:focus-within .summary-edit {
+  opacity: 1;
+}
+
+.summary-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.summary-chart {
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.summary-chart svg {
+  display: block;
+  width: 100%;
+  height: 10rem;
+  margin: var(--space-sm) 0;
+}
+
+#loss-cost-per-unit-chart {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.summary-chart:has(#loss-cost-per-unit-chart),
+.summary-chart:has(#average-reporting-lag-chart) {
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+}
+
+.summary-chart .loss-cost-line-chart,
+.summary-chart .reporting-lag-line-chart {
+  height: auto;
+  overflow: visible;
+}
+
+.loss-cost-grid,
+.summary-trend-grid {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-dasharray: 3 5;
+}
+
+.loss-cost-axis,
+.summary-trend-axis {
+  fill: none;
+  stroke: var(--color-border);
+}
+
+.loss-cost-label,
+.summary-trend-label {
+  fill: var(--color-text-muted);
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.loss-cost-axis-title,
+.summary-trend-axis-title {
+  fill: var(--color-text-strong);
+  font-weight: 600;
+}
+
+.loss-cost-line,
+.summary-trend-line {
+  fill: none;
+  stroke: var(--color-action);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.loss-cost-point,
+.summary-trend-point {
+  fill: var(--color-surface);
+  stroke: var(--color-action);
+  stroke-width: 3;
+}
+
+.loss-cost-developed .loss-cost-line,
+.loss-cost-developed .loss-cost-point {
+  stroke: #a87516;
+}
+
+.loss-cost-developed .loss-cost-line { stroke-dasharray: 6 5; }
+
+.loss-cost-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-sm) var(--space-lg);
+  margin-top: var(--space-sm);
+}
+
+.loss-cost-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loss-cost-legend span::before {
+  content: "";
+  flex: 0 0 1.5rem;
+  border-top: 3px solid var(--color-action);
+}
+
+.loss-cost-legend .loss-cost-developed::before { border-top: 3px dashed #a87516; }
+
+@media (max-width: 760px) {
+  .summary-charts { grid-template-columns: 1fr; }
+}
+
+.summary-info-boxes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.summary-info-box {
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.summary-info-box h3 {
+  margin: 0 0 var(--space-xs);
+}
+
+.summary-info-box p {
+  margin: 0 0 var(--space-xs);
+  font-weight: 700;
+}
+
+.summary-info-box span {
+  font-size: 0.9rem;
 }
 
 #large-losses-list {

@@ -503,11 +503,11 @@
         }
 
         .listed-panel,
-        .loss-history-panel {
+        .experience-panel {
             grid-column: 1 / -1;
         }
 
-        .loss-history-tabs {
+        .experience-tabs {
             display: flex;
             flex-wrap: wrap;
             gap: var(--space-sm);
@@ -515,7 +515,7 @@
             border-bottom: 1px solid var(--color-border);
         }
 
-        .loss-history-tab {
+        .experience-tab {
             border: 0;
             border-bottom: 3px solid transparent;
             border-radius: 0;
@@ -527,14 +527,14 @@
             cursor: pointer;
         }
 
-        .loss-history-tab[aria-selected="true"] {
+        .experience-tab[aria-selected="true"] {
             border-bottom-color: var(--color-action);
             color: var(--color-text-strong);
         }
 
-        .loss-history-tabpanel[hidden] { display: none; }
+        .experience-tabpanel[hidden] { display: none; }
 
-        .loss-history-insight {
+        .experience-insight {
             margin: 0;
             padding: var(--space-xl);
             border-left: 4px solid var(--color-action);
@@ -543,7 +543,7 @@
             line-height: 1.7;
         }
 
-        .loss-history-charts {
+        .experience-charts {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: var(--space-xl);
@@ -564,52 +564,75 @@
             font-weight: 700;
         }
 
-        .loss-bars {
-            display: flex;
-            align-items: end;
-            justify-content: space-around;
-            gap: var(--space-lg);
-            height: 8rem;
-            border-bottom: 1px solid var(--color-border);
+        .loss-chart svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            overflow: visible;
         }
 
-        .loss-bar-group {
+        .chart-grid {
+            fill: none;
+            stroke: var(--color-border);
+            stroke-dasharray: 3 5;
+        }
+
+        .chart-axis { stroke: var(--color-border); }
+
+        .chart-label {
+            fill: var(--color-text-muted);
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        .chart-axis-title {
+            fill: var(--color-text-strong);
+            font-weight: 600;
+        }
+
+        .chart-line {
+            fill: none;
+            stroke: var(--color-action);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .chart-point {
+            fill: var(--color-surface);
+            stroke: var(--color-action);
+            stroke-width: 3;
+        }
+
+        .chart-reserve { stroke: #a87516; }
+        .chart-line.chart-reserve { stroke-dasharray: 6 5; }
+
+        .chart-legend {
             display: flex;
-            flex: 1;
-            align-items: end;
             justify-content: center;
-            gap: 0.2rem;
-            height: 100%;
-        }
-
-        .loss-bar {
-            width: min(2rem, 42%);
-            min-height: 0.25rem;
-            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-            background: var(--color-action);
-        }
-
-        .loss-bar.reserve { background: #c79427; }
-
-        .loss-bar-labels {
-            display: flex;
-            justify-content: space-around;
             gap: var(--space-lg);
-            padding-top: var(--space-sm);
+            margin-top: var(--space-sm);
             color: var(--color-text-muted);
             font-size: 0.8rem;
-            text-align: center;
         }
+
+        .chart-legend span { display: inline-flex; align-items: center; gap: 0.5rem; }
+        .chart-legend span::before {
+            content: "";
+            width: 1.5rem;
+            border-top: 3px solid var(--color-action);
+        }
+        .chart-legend .reserve::before { border-top: 3px dashed #a87516; }
 
         @media (max-width: 760px) {
-            .loss-history-charts { grid-template-columns: 1fr; }
+            .experience-charts { grid-template-columns: 1fr; }
         }
 
-        .loss-history-section + .loss-history-section {
+        .experience-section + .experience-section {
             margin-top: var(--space-2xl);
         }
 
-        .loss-history-subtitle {
+        .experience-subtitle {
             margin: 0 0 var(--space-md);
             font-size: 1.1rem;
             color: var(--color-text-strong);
@@ -758,46 +781,93 @@
                 <div class="automated-premium-total"><span>Grand Total</span><span>$17,645.58</span></div>
             </section>
 
-            <section class="panel loss-history-panel" aria-labelledby="loss-history-title">
+            <section class="panel experience-panel" aria-labelledby="experience-title">
                 <header class="panel-header">
-                    <h2 id="loss-history-title" class="panel-title">Loss History</h2>
+                    <h2 id="experience-title" class="panel-title">Experience</h2>
                     <div class="panel-actions">
                         <button type="button" class="button"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Revise application</button>
                         <button type="button" id="open-workbench" class="button" aria-haspopup="dialog" aria-controls="workbench-modal"><i class="fa-solid fa-toolbox" aria-hidden="true"></i> Workbench</button>
                     </div>
                 </header>
-                <div class="loss-history-tabs" role="tablist" aria-label="Loss history views">
-                    <button type="button" class="loss-history-tab" role="tab" aria-selected="true" aria-controls="loss-summary" id="loss-summary-tab">Summary</button>
-                    <button type="button" class="loss-history-tab" role="tab" aria-selected="false" aria-controls="losses-by-year" id="losses-by-year-tab">Losses By Year</button>
-                    <button type="button" class="loss-history-tab" role="tab" aria-selected="false" aria-controls="large-losses" id="large-losses-tab">Large Losses</button>
-                    <button type="button" class="loss-history-tab" role="tab" aria-selected="false" aria-controls="all-losses" id="all-losses-tab">All Claims</button>
+                <div class="experience-tabs" role="tablist" aria-label="Experience views">
+                    <button type="button" class="experience-tab" role="tab" aria-selected="true" aria-controls="loss-summary" id="loss-summary-tab">Summary</button>
+                    <button type="button" class="experience-tab" role="tab" aria-selected="false" aria-controls="losses-by-year" id="losses-by-year-tab">Losses By Year</button>
+                    <button type="button" class="experience-tab" role="tab" aria-selected="false" aria-controls="large-losses" id="large-losses-tab">Large Losses</button>
+                    <button type="button" class="experience-tab" role="tab" aria-selected="false" aria-controls="all-losses" id="all-losses-tab">All Claims</button>
                 </div>
-                <div id="loss-summary" class="loss-history-tabpanel" role="tabpanel" aria-labelledby="loss-summary-tab">
-                    <p class="loss-history-insight">The insured reported six claims across the last three policy years, with $40,900 total incurred losses. The 2025 policy year accounts for the largest share of incurred loss ($26,400) and includes one open claim. Average reporting lag is 8 days, with the longest observed lag at 12 days. Loss frequency is trending downward, while the remaining reserve is concentrated in the most recent year.</p>
-                    <div class="loss-history-charts" aria-label="Loss history charts">
+                <div id="loss-summary" class="experience-tabpanel" role="tabpanel" aria-labelledby="loss-summary-tab">
+                    <p class="experience-insight">The insured reported six claims across the last three policy years, with $40,900 total incurred losses. The 2025 policy year accounts for the largest share of incurred loss ($26,400) and includes one open claim. Average reporting lag is 8 days, with the longest observed lag at 12 days. Loss frequency is trending downward, while the remaining reserve is concentrated in the most recent year.</p>
+                    <div class="experience-charts" aria-label="Experience charts">
                         <figure class="loss-chart">
                             <figcaption>Incurred loss by policy year</figcaption>
-                            <div class="loss-bars" aria-hidden="true">
-                                <div class="loss-bar-group"><span class="loss-bar" style="height: 100%"></span></div>
-                                <div class="loss-bar-group"><span class="loss-bar" style="height: 46%"></span></div>
-                                <div class="loss-bar-group"><span class="loss-bar" style="height: 9%"></span></div>
-                            </div>
-                            <div class="loss-bar-labels"><span>2025<br>$26.4k</span><span>2024<br>$12.1k</span><span>2023<br>$2.4k</span></div>
+                            <svg viewBox="0 0 440 280" role="img" aria-labelledby="incurred-chart-title incurred-chart-description">
+                                <title id="incurred-chart-title">Incurred loss cost by policy year</title>
+                                <desc id="incurred-chart-description">Policy year on the x-axis; loss cost in dollars on the y-axis, from $0 to $30,000. 2023: $2,400; 2024: $12,100; 2025: $26,400.</desc>
+                                <defs>
+                                    <linearGradient id="incurred-area" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="var(--color-action)" stop-opacity="0.18" />
+                                        <stop offset="100%" stop-color="var(--color-action)" stop-opacity="0.02" />
+                                    </linearGradient>
+                                </defs>
+                                <path class="chart-grid" d="M80 40H410 M80 96.67H410 M80 153.33H410" />
+                                <path class="chart-axis" d="M80 40V210H410" fill="none" />
+                                <g class="chart-label" text-anchor="end">
+                                    <text x="68" y="44">$30k</text><text x="68" y="101">$20k</text>
+                                    <text x="68" y="158">$10k</text><text x="68" y="214">$0</text>
+                                </g>
+                                <path d="M95 196.4L245 141.43L395 60.4V210H95Z" fill="url(#incurred-area)" />
+                                <path class="chart-line" d="M95 196.4L245 141.43L395 60.4" />
+                                <g class="chart-point">
+                                    <circle cx="95" cy="196.4" r="5"><title>2023: $2,400 incurred</title></circle>
+                                    <circle cx="245" cy="141.43" r="5"><title>2024: $12,100 incurred</title></circle>
+                                    <circle cx="395" cy="60.4" r="5"><title>2025: $26,400 incurred</title></circle>
+                                </g>
+                                <g class="chart-label chart-axis-title" text-anchor="middle">
+                                    <text x="95" y="182">$2.4k</text><text x="245" y="127">$12.1k</text><text x="395" y="46">$26.4k</text>
+                                </g>
+                                <g class="chart-label" text-anchor="middle">
+                                    <text x="95" y="232">2023</text><text x="245" y="232">2024</text><text x="395" y="232">2025</text>
+                                    <text class="chart-axis-title" x="245" y="265">Policy year</text>
+                                    <text class="chart-axis-title" transform="translate(18 125) rotate(-90)">Loss cost ($)</text>
+                                </g>
+                            </svg>
                         </figure>
                         <figure class="loss-chart">
                             <figcaption>Paid vs. reserve</figcaption>
-                            <div class="loss-bars" aria-hidden="true">
-                                <div class="loss-bar-group"><span class="loss-bar" style="height: 100%"></span><span class="loss-bar reserve" style="height: 35%"></span></div>
-                                <div class="loss-bar-group"><span class="loss-bar" style="height: 54%"></span><span class="loss-bar reserve" style="height: 10%"></span></div>
-                                <div class="loss-bar-group"><span class="loss-bar" style="height: 13%"></span><span class="loss-bar reserve" style="height: 0.25rem"></span></div>
-                            </div>
-                            <div class="loss-bar-labels"><span>2025</span><span>2024</span><span>2023</span></div>
+                            <svg viewBox="0 0 440 280" role="img" aria-labelledby="paid-chart-title paid-chart-description">
+                                <title id="paid-chart-title">Paid and reserve loss cost by policy year</title>
+                                <desc id="paid-chart-description">Policy year on the x-axis; loss cost in dollars on the y-axis, from $0 to $30,000. 2023: $2,400 paid, $0 reserve; 2024: $9,750 paid, $2,350 reserve; 2025: $18,200 paid, $8,200 reserve.</desc>
+                                <path class="chart-grid" d="M80 40H410 M80 96.67H410 M80 153.33H410" />
+                                <path class="chart-axis" d="M80 40V210H410" fill="none" />
+                                <g class="chart-label" text-anchor="end">
+                                    <text x="68" y="44">$30k</text><text x="68" y="101">$20k</text>
+                                    <text x="68" y="158">$10k</text><text x="68" y="214">$0</text>
+                                </g>
+                                <path class="chart-line" d="M95 196.4L245 154.75L395 106.87" />
+                                <path class="chart-line chart-reserve" d="M95 210L245 196.68L395 163.53" />
+                                <g class="chart-point">
+                                    <circle cx="95" cy="196.4" r="5"><title>2023: $2,400 paid</title></circle>
+                                    <circle cx="245" cy="154.75" r="5"><title>2024: $9,750 paid</title></circle>
+                                    <circle cx="395" cy="106.87" r="5"><title>2025: $18,200 paid</title></circle>
+                                </g>
+                                <g class="chart-point chart-reserve">
+                                    <circle cx="95" cy="210" r="5"><title>2023: $0 reserve</title></circle>
+                                    <circle cx="245" cy="196.68" r="5"><title>2024: $2,350 reserve</title></circle>
+                                    <circle cx="395" cy="163.53" r="5"><title>2025: $8,200 reserve</title></circle>
+                                </g>
+                                <g class="chart-label" text-anchor="middle">
+                                    <text x="95" y="232">2023</text><text x="245" y="232">2024</text><text x="395" y="232">2025</text>
+                                    <text class="chart-axis-title" x="245" y="265">Policy year</text>
+                                    <text class="chart-axis-title" transform="translate(18 125) rotate(-90)">Loss cost ($)</text>
+                                </g>
+                            </svg>
+                            <div class="chart-legend" aria-hidden="true"><span>Paid</span><span class="reserve">Reserve</span></div>
                         </figure>
                     </div>
                 </div>
-                <div id="losses-by-year" class="loss-history-tabpanel" role="tabpanel" aria-labelledby="losses-by-year-tab" hidden>
-                <div class="loss-history-section">
-                    <h3 class="loss-history-subtitle">Losses By Year</h3>
+                <div id="losses-by-year" class="experience-tabpanel" role="tabpanel" aria-labelledby="losses-by-year-tab" hidden>
+                <div class="experience-section">
+                    <h3 class="experience-subtitle">Losses By Year</h3>
                     <table class="spotlight-table">
                         <caption class="visually-hidden">Insurance history totals grouped by policy year</caption>
                         <thead><tr><th scope="col">Policy Year</th><th scope="col">Insurer</th><th scope="col">Lines of Coverage</th><th scope="col"># Claims</th><th scope="col"># Open Claims</th><th scope="col">Avg Reporting Lag</th><th scope="col">Total Paid</th><th scope="col">Total Reserve</th><th scope="col" class="right-align">Total Incurred</th></tr></thead>
@@ -810,9 +880,9 @@
                     </table>
                 </div>
                 </div>
-                <div id="large-losses" class="loss-history-tabpanel" role="tabpanel" aria-labelledby="large-losses-tab" hidden>
-                <div class="loss-history-section">
-                    <h3 class="loss-history-subtitle">Large Losses</h3>
+                <div id="large-losses" class="experience-tabpanel" role="tabpanel" aria-labelledby="large-losses-tab" hidden>
+                <div class="experience-section">
+                    <h3 class="experience-subtitle">Large Losses</h3>
                     <table class="spotlight-table large-loss-table">
                         <caption class="visually-hidden">Large losses</caption>
                         <thead><tr><th scope="col">Accident Date</th><th scope="col">Reported Date</th><th scope="col">Policy Year</th><th scope="col">Claimant / Description</th><th scope="col">Reporting Lag</th><th scope="col">Status</th><th scope="col">Total Incurred</th></tr></thead>
@@ -824,7 +894,7 @@
                     </table>
                 </div>
                 </div>
-                <div id="all-losses" class="loss-history-tabpanel" role="tabpanel" aria-labelledby="all-losses-tab" hidden>
+                <div id="all-losses" class="experience-tabpanel" role="tabpanel" aria-labelledby="all-losses-tab" hidden>
                     <table class="spotlight-table">
                         <caption class="visually-hidden">All reported losses</caption>
                         <thead><tr><th scope="col">Accident Date</th><th scope="col">Reported Date</th><th scope="col">Policy Year</th><th scope="col">Description</th><th scope="col">Reporting Lag</th><th scope="col">Status</th><th scope="col">Paid</th><th scope="col">Incurred</th></tr></thead>
@@ -900,7 +970,7 @@
                     <select id="workbench-panel-select"></select>
                 </header>
                 <div class="workbench-context-content">
-                <form id="workbench-insurance-form" class="workbench-insurance-form" aria-label="Insurance History" data-workbench-view="Loss History">
+                <form id="workbench-insurance-form" class="workbench-insurance-form" aria-label="Insurance History" data-workbench-view="Experience">
                     <div class="policy-list">
                         <article class="policy-entry form-entry" aria-labelledby="workbench-policy-2025">
                             <header class="policy-entry-header">
@@ -995,7 +1065,7 @@
             <section id="workbench-premium-column" class="workbench-column" aria-labelledby="workbench-premium-title">
                 <h3 id="workbench-premium-title" class="workbench-subheading">Premium Outcome</h3>
                 <div id="workbench-assistant">
-                    <p>The recent loss history includes an open collision claim with $7,500 in outstanding reserves, while the prior policy year records a closed rear-end collision. The open claim warrants a current valuation review to assess the potential for further development. Confirm the loss amounts, coverage details, and reporting history before finalizing the premium outcome.</p>
+                    <p>The recent Experience includes an open collision claim with $7,500 in outstanding reserves, while the prior policy year records a closed rear-end collision. The open claim warrants a current valuation review to assess the potential for further development. Confirm the loss amounts, coverage details, and reporting history before finalizing the premium outcome.</p>
                 </div>
                 <div id="workbench-premium-breakdown" class="workbench-premium-breakdown"></div>
             </section>
@@ -1056,7 +1126,7 @@
             document.querySelectorAll('[data-workbench-view]').forEach((view) => {
                 view.hidden = view.dataset.workbenchView !== panelTitle;
             });
-            document.getElementById('workbench-policy-footer').hidden = panelTitle !== 'Loss History';
+            document.getElementById('workbench-policy-footer').hidden = panelTitle !== 'Experience';
             workbenchPanelSelect.value = panelTitle;
             document.querySelector('.workbench-context-content').scrollTop = 0;
         }
@@ -1081,10 +1151,10 @@
         });
         document.getElementById('close-workbench').addEventListener('click', () => workbenchModal.close());
 
-        document.querySelectorAll('.loss-history-tab').forEach((tab) => {
+        document.querySelectorAll('.experience-tab').forEach((tab) => {
             tab.addEventListener('click', () => {
-                document.querySelectorAll('.loss-history-tab').forEach((item) => item.setAttribute('aria-selected', item === tab ? 'true' : 'false'));
-                document.querySelectorAll('.loss-history-tabpanel').forEach((panel) => {
+            document.querySelectorAll('.experience-tab').forEach((item) => item.setAttribute('aria-selected', item === tab ? 'true' : 'false'));
+            document.querySelectorAll('.experience-tabpanel').forEach((panel) => {
                     panel.hidden = panel.id !== tab.getAttribute('aria-controls');
                 });
             });

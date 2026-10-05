@@ -77,6 +77,7 @@ function createPolicyEntry(policyIndex, data = {}) {
                     <div class="claim-list">
                         <div class="claim-table-header">
                             <div>Incident Date</div>
+                            <div>Reported Date</div>
                             <div>Status</div>
                             <div>Incurred</div>
                             <div>ALAE</div>
@@ -221,6 +222,10 @@ function createClaimEntry(policyIndex, claimsIndex, claim = {}) {
                     <input type="date" id="claim-incident-date-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][incidentDate]" value="${claim.incidentDate || ""}">
                 </div>
                 <div class="claim-field">
+                    <label for="claim-reported-date-${policyIndex}-${claimsIndex}">Reported Date</label>
+                    <input type="date" id="claim-reported-date-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][reportedDate]" value="${claim.reportedDate || ""}">
+                </div>
+                <div class="claim-field">
                     <label for="claim-status-${policyIndex}-${claimsIndex}">Status</label>
                     <select id="claim-status-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][status]">
                         <option value="open" ${claim.status === "open" ? "selected" : ""}>open</option>
@@ -293,6 +298,7 @@ function ensureClaimHeader(claimList) {
   header.className = "claim-table-header";
   header.innerHTML = `
                 <div>Incident Date</div>
+                <div>Reported Date</div>
                 <div>Status</div>
                 <div>Incurred</div>
                 <div>ALAE</div>
@@ -312,12 +318,13 @@ function readMoney(value) {
 }
 
 function formatMoney(amount) {
-  return new Intl.NumberFormat("en-US", {
+  const formatted = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount || 0);
+  return formatted.replace(/(\.\d{2})$/, "<sup>$1</sup>");
 }
 
 function escapeHtml(value) {
@@ -629,6 +636,7 @@ function createPoliciesFromLossRun(output = mergeExtractionRecords()) {
     matchingClaims.forEach((claim, claimIndex) => {
       const claimEntry = createClaimEntry(policyIndex, claimIndex, {
         incidentDate: toDateInputValue(claim.loss_date),
+        reportedDate: toDateInputValue(claim.reported_date ?? claim.report_date),
         status: normalizeClaimStatus(claim.claim_status),
         incurred: claim.incurred_amount ?? "",
         alae: claim.alae_amount ?? "",
