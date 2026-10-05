@@ -16,7 +16,6 @@ const APP_CONFIG = Object.freeze({
 
 const policyList = document.getElementById("policy-list");
 const addPolicyButton = document.getElementById("add-policy");
-const continueButton = document.getElementById("continue-button");
 const largeLossesList = document.getElementById("large-losses-list");
 const filePreviewIframe = document.getElementById("file-preview");
 const maximizePreviewButton = document.getElementById("maximize-preview");

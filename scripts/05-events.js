@@ -1,11 +1,38 @@
 // Event handlers and application initialization
-function handleContinue(event) {
-  const shouldContinue =
-    hasInsuranceHistoryInformation() ||
-    window.confirm(
-      "You have not entered any insurance history information. Are you sure you wish to continue?",
-    );
-  if (!shouldContinue) event.preventDefault();
+let highlightedClaim = null;
+let claimHighlightTimeout = null;
+
+function clearClaimHighlight() {
+  highlightedClaim?.classList.remove('claim-highlighted');
+  highlightedClaim = null;
+  clearTimeout(claimHighlightTimeout);
+  claimHighlightTimeout = null;
+}
+
+function handleLargeLossClick(event) {
+  if (!(event.target instanceof Element)) return;
+  const button = event.target.closest('.large-loss-jump');
+  if (!button) return;
+  const policy = policyList.querySelector(`[data-policy-index="${button.dataset.policyIndex}"]`);
+  const claim = policy?.querySelector(`.claim-entry[data-claim-index="${button.dataset.claimIndex}"]`);
+  if (!claim) return;
+
+  clearClaimHighlight();
+  claim.closest('.claims-form').classList.add('open');
+  highlightedClaim = claim;
+  claim.classList.add('claim-highlighted');
+  claim.scrollIntoView({
+    behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    block: 'center',
+    inline: 'nearest',
+  });
+  claimHighlightTimeout = setTimeout(clearClaimHighlight, 30000);
+}
+
+function clearClaimHighlightOnEdit(event) {
+  if (event.target instanceof Element && event.target.matches('input, select, textarea')) {
+    clearClaimHighlight();
+  }
 }
 
 function handlePolicyChange(event) {
@@ -14,6 +41,8 @@ function handlePolicyChange(event) {
 
   const policy = target.closest(".policy-entry");
   if (!policy) return;
+
+  if (target.matches('input.usd-input')) formatAffixedInput(target);
 
   if (target.matches('input[type="date"][name$="][effectiveDate]"]')) {
     const effectiveDate = target.value;
@@ -37,6 +66,8 @@ function handlePolicyInput(event) {
 
   const policy = target.closest(".policy-entry");
   if (!policy) return;
+
+  if (target.matches('input.usd-input')) formatAffixedInput(target);
 
   const policyIndex = getPolicyIndex(policy);
   const claim = target.closest(".claim-entry");
@@ -190,11 +221,15 @@ function handleTestDataShortcut(event) {
 
 function initializeApp() {
   addPolicyButton.addEventListener("click", addPolicy);
-  continueButton.addEventListener("click", handleContinue);
   policyList.addEventListener("change", handlePolicyChange);
   policyList.addEventListener("input", handlePolicyInput);
   policyList.addEventListener("click", handlePolicyClick);
   largeLossesList.addEventListener("input", handleLargeLossInput);
+  largeLossesList.addEventListener("click", handleLargeLossClick);
+  document.addEventListener("input", clearClaimHighlightOnEdit, true);
+  document.addEventListener("change", clearClaimHighlightOnEdit, true);
+  document.addEventListener("reset", clearClaimHighlight);
+  document.addEventListener("reset", () => queueMicrotask(() => initializePolicyMoneyInputs(policyList)));
   maximizePreviewButton.addEventListener("click", openFilePreviewModal);
   closePreviewButton.addEventListener("click", closeFilePreviewModal);
   window.addEventListener("click", closeCoverageMenus);

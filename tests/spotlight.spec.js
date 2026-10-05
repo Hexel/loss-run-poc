@@ -104,7 +104,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
                 expect(expiration.x).toBeGreaterThan(effective.x);
             } else {
                 expect(expiration.y).toBeGreaterThan(effective.y);
-                expect(expiration.width).toBeCloseTo(coverage.width, 0);
+                expect(expiration.width).toBeCloseTo(120, 0);
             }
         }
     });
@@ -207,7 +207,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
         await expect(insuranceForm.locator('.policy-entry')).toHaveCount(2);
         await expect(insuranceForm.locator('.policy-entry').first()).toHaveCSS('background-color', 'rgb(251, 251, 251)');
         await expect(insuranceForm.locator('.policy-entry').first()).toHaveCSS('color', 'rgb(61, 61, 61)');
-        await expect(insurerInput).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+        await expect(insurerInput).toHaveCSS('background-color', 'rgb(245, 245, 220)');
         await expect(insurerInput).toHaveCSS('color', 'rgb(61, 61, 61)');
         await expect(insuranceForm.getByLabel('Insurer', { exact: true }).first()).toHaveValue('Summit Casualty');
         await expect(insuranceForm.getByLabel('Policy Number', { exact: true }).first()).toHaveValue('SUMMIT-2025-01');
@@ -220,16 +220,14 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
             await expect(claimsTable.locator('.claim-table-header > div')).toHaveCount(9);
             await expect(claimsTable.locator('.claim-entry')).toHaveCSS('display', 'grid');
             await claimsTable.scrollIntoViewIfNeeded();
-            const heading = claimsTable.getByRole('heading', { name: 'Claims on policy', exact: true });
-            const headingBeforeScroll = await heading.boundingBox();
+            await expect(claimsTable.locator('.claims-form-header')).toHaveCount(0);
+            await expect(claimsTable).toHaveAttribute('aria-label', 'Claims on policy');
             const scroll = await scrollArea.evaluate(element => {
                 element.scrollLeft = element.scrollWidth;
                 return { width: element.clientWidth, contentWidth: element.scrollWidth, left: element.scrollLeft };
             });
             expect(scroll.contentWidth).toBeGreaterThan(scroll.width);
             expect(scroll.left).toBeGreaterThan(0);
-            expect(await heading.boundingBox()).toEqual(headingBeforeScroll);
-            await expect(heading).toBeInViewport();
             await expect(claimsTable.getByLabel('Details', { exact: true })).toBeInViewport();
             await scrollArea.evaluate(element => { element.scrollLeft = 0; });
         }

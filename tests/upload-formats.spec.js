@@ -31,6 +31,10 @@ for (const filename of ['workbench.html', 'insurance-history-form.html']) {
                 body: JSON.stringify({ status: 'SUCCEEDED', output: { policies: [], claims: [] } }),
             }));
             await page.goto(pathToFileURL(path.resolve(__dirname, '..', filename)).href);
+            if (filename === 'workbench.html') {
+                await expect(page.locator('#upload-loss-run')).toBeHidden();
+                await expect(page.locator('#loss-run-upload-form')).toBeVisible();
+            }
         });
 
         for (const file of supportedFiles) {
@@ -39,11 +43,41 @@ for (const filename of ['workbench.html', 'insurance-history-form.html']) {
                 await expect(input).toHaveAttribute('accept', '.pdf,.csv,.xls,.xlsx');
                 await input.setInputFiles(file);
                 await expect(page.locator('#uploaded-files tbody tr')).toHaveCount(1);
+                await expect(page.locator('#upload-loss-run')).toBeVisible();
                 await expect(page.locator('#uploaded-files')).toContainText(file.name);
                 await expect(page.locator('#upload-error')).toBeHidden();
                 expect(requests).toHaveLength(1);
                 expect(requests[0]).toContain(`filename="${file.name}"`);
                 expect(requests[0]).toContain(file.buffer.toString());
+            });
+        }
+
+        if (filename === 'workbench.html') {
+            test('keeps the upload section hidden after a processing failure', async ({ page }) => {
+                await page.route('**/document', route => route.fulfill({
+                    status: 500,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ message: 'Processing failed' }),
+                }));
+                await page.locator('input[type="file"]').setInputFiles(supportedFiles[0]);
+                await expect(page.locator('#upload-error')).toHaveText('Processing failed');
+                await expect(page.locator('#upload-error')).toBeVisible();
+                await expect(page.locator('#upload-loss-run')).toBeHidden();
+                await expect(page.locator('#page-loading-overlay')).toBeHidden();
+                await page.unroute('**/document');
+                await page.route('**/document', route => route.fulfill({
+                    status: 202,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ documentId: 'format-test' }),
+                }));
+                await page.locator('input[type="file"]').setInputFiles(supportedFiles[1]);
+                await expect(page.locator('#upload-loss-run')).toBeVisible();
+                await expect(page.locator('#uploaded-files tbody tr')).toHaveCount(1);
+                await page.locator('input[type="file"]').setInputFiles({
+                    name: 'invalid.txt', mimeType: 'text/plain', buffer: Buffer.from('unsupported'),
+                });
+                await expect(page.locator('#upload-error')).toBeVisible();
+                await expect(page.locator('#upload-loss-run')).toBeVisible();
             });
         }
 
@@ -60,6 +94,8 @@ for (const filename of ['workbench.html', 'insurance-history-form.html']) {
                 { name: 'loss-run.txt', mimeType: 'text/plain', buffer: Buffer.from('unsupported') },
             ]);
             await expect(page.locator('#upload-error')).toHaveText('Please choose PDF, CSV, or Microsoft Excel (.xls, .xlsx) files.');
+            await expect(page.locator('#upload-error')).toBeVisible();
+            if (filename === 'workbench.html') await expect(page.locator('#upload-loss-run')).toBeHidden();
             expect(requests).toHaveLength(0);
             await expect(page.locator('#uploaded-files')).toBeHidden();
         });

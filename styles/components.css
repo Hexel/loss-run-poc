@@ -1,21 +1,60 @@
+.workbench-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-panel);
+}
+
+.workbench-navbar nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-lg) var(--space-2xl);
+}
+
+.workbench-navbar-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
+.workbench-navbar #loss-run-upload-form {
+  margin-left: auto;
+  max-width: 100%;
+}
+
+.workbench-navbar .file-picker {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin-top: 0;
+}
+
+.workbench-navbar .file-picker:focus-within {
+  outline: 2px solid var(--color-action);
+  outline-offset: 3px;
+}
+
 .panel,
 #insurance-history-form {
   box-sizing: border-box;
   max-width: var(--content-width);
   margin-inline: auto;
-  padding: var(--space-2xl);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-panel);
+  /* padding: var(--space-2xl); */
+  /* background: var(--color-surface); */
+  /* box-shadow: var(--shadow-panel); */
   margin-block: var(--space-2xl);
+  margin-bottom: 4rem;
 }
 
 .panel.backless {
   background-color: transparent;
   box-shadow: none;
-}
-
-#insurance-history-form {
-  margin-block: 0;
 }
 
 .panel-title {
@@ -214,7 +253,24 @@ body:has(.workbench-modal[open]) {
 }
 
 #insurance-history-summary-table {
+  border: 1px solid var(--color-border);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
   display: none;
+}
+
+#insurance-history-summary-table :is(th, td) {
+  border-width: 0 1px 1px 0;
+}
+
+#insurance-history-summary-table tr > :last-child {
+  border-right: 0;
+}
+
+#insurance-history-summary-table tfoot tr:last-child > :is(th, td) {
+  border-bottom: 0;
 }
 
 sup {
@@ -500,10 +556,6 @@ dialog[open].file-preview-modal {
   cursor: default;
 }
 
-.large-loss-details {
-  grid-column: span 5;
-}
-
 .form-entry {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -518,9 +570,65 @@ dialog[open].file-preview-modal {
   box-shadow: var(--shadow-card);
 }
 
+.large-loss-entry-header {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  margin-bottom: var(--space-lg);
+}
+
+.large-loss-entry-header .large-loss-title {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 1.5rem;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.large-loss-status {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.large-loss-status.closed {
+  background: #e5e5e5;
+  color: #555;
+}
+
+.large-loss-status.open {
+  background: #ffeb99;
+  color: #695000;
+}
+
+.large-loss-entry-header .large-loss-jump {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  margin: -0.75rem -0.75rem -0.75rem 0;
+  padding: 0;
+  background: transparent;
+  color: var(--color-action);
+}
+
+.large-loss-entry-footer {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.large-loss-entry-footer dd {
+  overflow-wrap: anywhere;
+}
+
 .policy-entry-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-lg);
   margin-bottom: var(--space-lg);
@@ -532,20 +640,53 @@ dialog[open].file-preview-modal {
   margin: 0;
   overflow-wrap: anywhere;
   font-size: 1.5rem;
+  line-height: 1;
   font-weight: 700;
   color: var(--color-text-strong);
 }
 
 .form-row {
   display: grid;
-  grid-template-columns: minmax(240px, 1.1fr) repeat(5, minmax(100px, 1fr));
-  gap: var(--space-lg);
+  grid-template-columns: minmax(0, 1.1fr) var(--policy-period-width) var(--date-control-width) repeat(3, minmax(0, 1fr));
+  gap: 0;
   align-items: end;
+}
+
+.policy-period-field {
+  width: var(--policy-period-width);
+  max-width: 100%;
+}
+
+.policy-valuation-field {
+  width: var(--date-control-width);
+  max-width: 100%;
+}
+
+.policy-period-separator {
+  width: var(--space-sm);
+  text-align: center;
+}
+
+.policy-row > .form-field {
+  min-width: 0;
+}
+
+.policy-period-inputs {
+  width: 170px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.policy-period-inputs input {
+  min-width: 0;
 }
 
 .large-loss-entry-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(100px, 1fr));
+  grid-template-columns: repeat(6, minmax(100px, 1fr));
   gap: var(--space-lg);
 }
 
@@ -556,10 +697,13 @@ dialog[open].file-preview-modal {
 
 .selectBox {
   position: relative;
-  border: 1px solid var(--color-control-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  min-height: var(--control-height);
+  border: 0;
+  border-bottom: 1px solid var(--color-control-border);
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-sizing: border-box;
+  height: var(--control-height);
   display: flex;
   align-items: center;
 }
@@ -567,13 +711,14 @@ dialog[open].file-preview-modal {
 .selectBox select {
   width: 100%;
   box-sizing: border-box;
-  min-height: var(--control-height);
+  height: 100%;
+  min-height: 0;
   border: none;
   outline: none;
   background: transparent;
   font: inherit;
   color: var(--color-text);
-  padding: 0.4rem 2rem 0.4rem 0.6rem;
+  padding: 0 0 0 1.5rem;
   appearance: none;
   -webkit-appearance: none;
   cursor: pointer;
@@ -587,7 +732,7 @@ dialog[open].file-preview-modal {
   padding: 3px;
   transform: rotate(45deg);
   position: absolute;
-  right: var(--space-lg);
+  left: 0.25rem;
   top: calc(50% - var(--radius-sm));
   pointer-events: none;
 }
@@ -635,9 +780,7 @@ dialog[open].file-preview-modal {
 .claims-form {
   display: none;
   width: 100%;
-  margin-top: var(--space-lg);
   box-sizing: border-box;
-  border-top: 1px solid var(--color-border);
   padding-top: var(--space-lg);
 }
 
@@ -645,24 +788,10 @@ dialog[open].file-preview-modal {
   display: block;
 }
 
-.claims-form-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-lg);
-  margin-bottom: var(--space-lg);
-}
-
-.claims-form-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--color-text);
-}
-
 .claim-list {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0;
 }
 
 .claim-table-header {
@@ -679,13 +808,38 @@ dialog[open].file-preview-modal {
 .claim-entry {
   display: grid;
   grid-template-columns: var(--claim-grid-columns);
-  gap: var(--space-sm);
+  gap: 0;
   align-items: center;
   margin-left: 0;
   margin-right: 0.6rem;
   min-width: 0;
   padding: 0;
   border: 0;
+}
+
+.claim-entry:has(.remove-claim:hover) {
+  background-color: var(--color-error-surface);
+}
+
+.claim-entry.claim-highlighted {
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 2px var(--color-action);
+  animation: claim-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes claim-glow {
+  0%, 100% {
+    box-shadow: inset 0 0 0 2px var(--color-action), inset 0 0 4px 2px rgba(44, 107, 47, 0.15);
+  }
+  50% {
+    box-shadow: inset 0 0 0 2px var(--color-action), inset 0 0 12px 4px rgba(44, 107, 47, 0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .claim-entry.claim-highlighted {
+    animation: none;
+  }
 }
 
 .claim-field {
@@ -707,18 +861,19 @@ dialog[open].file-preview-modal {
   min-width: 0;
   box-sizing: border-box;
   height: var(--claim-control-height);
-  border: 1px solid var(--color-control-border);
-  border-radius: var(--radius-sm);
-  padding: 0.3rem 0.45rem;
+  border: 0;
+  border-bottom: 1px solid var(--color-control-border);
+  border-radius: 0;
+  padding: 0;
   font: inherit;
   color: var(--color-text);
-  background: var(--color-surface);
+  background: transparent;
 }
 
 .claim-remove {
-  background: var(--color-danger);
-  color: var(--color-surface);
-  width: var(--claim-action-width);
+  background: transparent;
+  color: var(--color-danger);
+  width: fit-content;
   height: var(--claim-control-height);
   padding: 0.25rem 0.4rem;
   font-size: 1rem;
@@ -727,6 +882,8 @@ dialog[open].file-preview-modal {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-right: 0 !important;
+  text-align: right;
 }
 
 .form-field {
@@ -736,6 +893,7 @@ dialog[open].file-preview-modal {
 }
 
 .form-field label,
+.form-field-label,
 .large-loss-field dt {
   font-size: 0.82rem;
   font-weight: 700;
@@ -752,27 +910,104 @@ dialog[open].file-preview-modal {
   width: 100%;
   box-sizing: border-box;
   height: var(--control-height);
-  border: 1px solid var(--color-control-border);
-  border-radius: var(--radius-sm);
-  padding: 0.4rem 0.6rem;
+  border: 0;
+  border-bottom: 1px solid var(--color-control-border);
+  border-radius: 0;
+  padding: 0;
   font: inherit;
   color: var(--color-text);
+  background: transparent;
+}
+
+:is(.form-field, .claim-field) select:not(.coverage-select) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-left: 1.5rem;
+  background-image: linear-gradient(45deg, transparent 50%, var(--color-action-secondary) 50%),
+    linear-gradient(135deg, var(--color-action-secondary) 50%, transparent 50%);
+  background-position: left 0.25rem center, left calc(0.25rem + 4px) center;
+  background-size: 4px 4px;
+  background-repeat: no-repeat;
+}
+
+.policy-entry :is(input[type="text"], input[type="date"], textarea, select, .selectBox) {
+  border-bottom: 0;
+}
+
+:is(.form-field, .claim-field) :is(input[type="text"], input[type="date"], textarea, select):not([readonly], .coverage-select):is(:hover, :focus),
+.selectBox:hover,
+.multiselect:focus-within .selectBox,
+.selectBox:has(+ .checkboxes.open) {
+  background-color: beige;
+}
+
+:is(.form-field, .claim-field) .is-empty:not([readonly]) {
+  background-color: beige;
+  opacity: 0.5;
+}
+
+:is(.form-field, .claim-field) .is-empty:not([readonly]):is(:hover, :focus) {
+  opacity: 1;
+}
+
+.formatted-date-control {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.formatted-date-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 2rem;
+  pointer-events: none;
+  color: var(--color-text);
+}
+
+:is(.form-field, .claim-field) .formatted-date-control input:not(:focus):not(.is-empty) {
+  color: transparent;
+}
+
+.formatted-date-control input:focus + .formatted-date-value {
+  visibility: hidden;
+}
+
+:is(.form-field, .claim-field) input[type="date"]::-webkit-calendar-picker-indicator {
+  order: -1;
+  margin-left: 0;
+  margin-right: var(--space-sm);
 }
 
 .form-field textarea {
   height: auto;
 }
 
+.form-field .large-loss-detail-textarea {
+  field-sizing: content;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  min-height: 1lh;
+  border-bottom: 0;
+  resize: none;
+  overflow: hidden;
+  scrollbar-width: none;
+  display: block;
+}
+
 .form-field input[type="text"]::placeholder {
   color: var(--color-placeholder);
 }
 
-.policy-menu-button {
+.policy-entry-header .policy-menu-button {
   flex-shrink: 0;
   width: 3rem;
   height: 3rem;
+  /* Preserve the hit area without inflating the header's visual spacing. */
+  margin: -0.75rem -0.75rem -0.75rem 0;
   padding: 0;
-  background: var(--color-surface);
+  background: transparent;
   color: var(--color-text-strong);
 }
 
@@ -1022,10 +1257,22 @@ dialog[open].file-preview-modal {
 }
 
 .add-policy-button {
-  background: var(--color-action);
-  color: var(--color-surface);
+  background: transparent;
+  color: var(--color-action);
+  border: 1px solid var(--color-action);
   padding: 0.8rem 1.2rem;
   margin-top: var(--space-lg);
+  width: 100%;
+}
+
+.add-policy-button:hover {
+  background: var(--color-hover);
+  filter: none;
+}
+
+.add-policy-button:focus-visible {
+  outline: 2px solid var(--color-action);
+  outline-offset: 3px;
 }
 
 .fa-solid {

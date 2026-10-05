@@ -45,6 +45,15 @@ function initializeAffixedInput(input) {
   formatAffixedInput(input);
 }
 
+function initializePolicyMoneyInputs(root) {
+  const fields = ['premium', 'incurred', 'alae', 'paid', 'reserved', 'recovered'];
+  const selector = fields.map(field => `input[name$="[${field}]"]`).join(', ');
+  root.querySelectorAll(selector).forEach(input => {
+    input.classList.add('usd-input');
+    initializeAffixedInput(input);
+  });
+}
+
 function calculateLossRatio(totalPremium, totalIncurred, ldf = 1) {
   if (!totalPremium || !totalIncurred || !ldf) return null;
   return (totalIncurred * ldf) / totalPremium;
@@ -296,6 +305,7 @@ function hasInsuranceHistoryInformation() {
   const policyFieldNames = [
     "effectiveDate",
     "expirationDate",
+    "valuationDate",
     "insurer",
     "premium",
     "policyNumber",
@@ -355,6 +365,19 @@ function syncInsuranceHistoryVisibility() {
   }
 }
 
+function formatLargeLossDate(value) {
+  const date = new Date(`${value}T00:00:00Z`);
+  if (!Number.isFinite(date.getTime())) return '—';
+  const day = date.getUTCDate();
+  const suffix = day % 100 >= 11 && day % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[day % 10] || 'th');
+  const month = new Intl.DateTimeFormat('en-US', { month: 'long', timeZone: 'UTC' }).format(date);
+  return `${month} ${day}${suffix}, ${date.getUTCFullYear()}`;
+}
+
+function formatLargeLossTitleAmount(amount) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Math.trunc(amount));
+}
+
 function renderLargeLossesSection() {
   const list = document.getElementById("large-losses-list");
   if (!list) return;
@@ -365,6 +388,7 @@ function renderLargeLossesSection() {
     const policyIndex = getPolicyIndex(policy);
     const effectiveField = getPolicyField(policy, "effectiveDate");
     const insurerField = getPolicyField(policy, "insurer");
+    const valuationField = getPolicyField(policy, "valuationDate");
     const policyYear =
       effectiveField && effectiveField.value
         ? Number(effectiveField.value.slice(0, 4))
@@ -390,8 +414,9 @@ function renderLargeLossesSection() {
         policyYear,
         insurer,
         incidentDate: incidentField?.value || "—",
+        valuationDate: valuationField?.value || "—",
         status: statusField?.value || "open",
-        incurred: formatMoney(incurred),
+        incurred,
         details: detailsField?.value || "",
       });
     });
@@ -407,6 +432,16 @@ function renderLargeLossesSection() {
     .map(
       (row) => `
                 <article class="large-loss-entry form-entry">
+                    <header class="panel-header large-loss-entry-header">
+                        <h3 class="panel-title large-loss-title"><span class="large-loss-title-text">${formatLargeLossTitleAmount(row.incurred)} on ${formatLargeLossDate(row.incidentDate)}</span> <span class="large-loss-status ${row.status === 'closed' ? 'closed' : 'open'}">${row.status === 'closed' ? 'CLOSED' : 'OPEN'}</span></h3>
+                        <button type="button" class="button icon-button large-loss-jump" data-policy-index="${row.policyIndex}" data-claim-index="${row.claimIndex}" aria-label="Show corresponding claim in Insurance History" title="Show claim in Insurance History">
+                            <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+                        </button>
+                    </header>
+                    <div class="form-field large-loss-details">
+                        <textarea id="large-loss-details-${row.policyIndex}-${row.claimIndex}" class="large-loss-detail-textarea" rows="1" aria-label="Details" data-policy-index="${row.policyIndex}" data-claim-index="${row.claimIndex}">${escapeHtml(row.details)}</textarea>
+                    </div>
+                    <footer class="large-loss-entry-footer">
                     <dl class="large-loss-entry-grid">
                         <div class="large-loss-field form-field">
                             <dt>Policy Year</dt>
@@ -421,18 +456,19 @@ function renderLargeLossesSection() {
                             <dd>${escapeHtml(row.incidentDate)}</dd>
                         </div>
                         <div class="large-loss-field form-field">
+                            <dt>Valuation Date</dt>
+                            <dd>${escapeHtml(row.valuationDate)}</dd>
+                        </div>
+                        <div class="large-loss-field form-field">
                             <dt>Status</dt>
                             <dd>${escapeHtml(row.status)}</dd>
                         </div>
                         <div class="large-loss-field form-field">
                             <dt>Incurred</dt>
-                            <dd>${escapeHtml(row.incurred)}</dd>
-                        </div>
-                        <div class="large-loss-field form-field large-loss-details">
-                            <dt><label for="large-loss-details-${row.policyIndex}-${row.claimIndex}">Details</label></dt>
-                            <dd><textarea id="large-loss-details-${row.policyIndex}-${row.claimIndex}" class="large-loss-detail-textarea" rows="5" data-policy-index="${row.policyIndex}" data-claim-index="${row.claimIndex}">${escapeHtml(row.details)}</textarea></dd>
+                            <dd>${formatMoney(row.incurred)}</dd>
                         </div>
                     </dl>
+                    </footer>
                 </article>
             `,
     )
@@ -568,7 +604,7 @@ function renderInsuranceHistorySummaryTable() {
       <tr><th colspan="3">${rows.length}-year Total</th><td>${totalUnits}</td><td class="claim-count-cell">${totalClaims} total</td><td>${totalOpenClaims} open</td><td class="reporting-lag-cell">—</td><td>${formatMoney(totalPaid)}</td><td>${formatMoney(totalReserve)}</td><td>${formatMoney(totalIncurred)}</td><td>${formatMoney(totalPremium)}</td><td>${formatLossRatio(totalPremium, totalIncurred)}</td><td></td><td></td></tr>`;
   }
   if (averageReportingLag) averageReportingLag.textContent = formatReportingLag(averageReportingLagByYear(rows.slice(0, 4)));
-  if (lossCostPerUnit) lossCostPerUnit.textContent = totalUnits ? formatMoney(totalIncurred / totalUnits) : "—";
+  if (lossCostPerUnit) lossCostPerUnit.innerHTML = totalUnits ? formatMoney(totalIncurred / totalUnits) : "—";
 
   const tableRows = Array.from(summaryBody.querySelectorAll("tr"));
   const originalPremiums = rows.map((row) => row.totalPremium);
@@ -603,7 +639,7 @@ function renderInsuranceHistorySummaryTable() {
     }
     if (lossCostPerUnit) {
       const units = Array.from(summaryBody.querySelectorAll(".units-input")).reduce((total, input) => total + (Number(input.value) || 0), 0);
-      lossCostPerUnit.textContent = units ? formatMoney(updatedTotalIncurred / units) : "—";
+      lossCostPerUnit.innerHTML = units ? formatMoney(updatedTotalIncurred / units) : "—";
     }
     updateAverageRatios();
   };
@@ -751,7 +787,7 @@ function renderInsuranceHistorySummaryTable() {
         footerRows[0].cells[1].innerHTML = formatSummaryDecimal(updatedTotalUnits / rows.length);
                 footerRows[1].cells[1].textContent = updatedTotalUnits;
       }
-      if (lossCostPerUnit) lossCostPerUnit.textContent = updatedTotalUnits ? formatMoney(rows.reduce((total, row) => total + row.totalIncurred, 0) / updatedTotalUnits) : "—";
+      if (lossCostPerUnit) lossCostPerUnit.innerHTML = updatedTotalUnits ? formatMoney(rows.reduce((total, row) => total + row.totalIncurred, 0) / updatedTotalUnits) : "—";
       updateLossCostChart();
     };
   });

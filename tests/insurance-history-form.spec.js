@@ -157,12 +157,12 @@ test.describe('insurance history form', () => {
         await expect(duplicatePolicy).toHaveValue('POL-100');
         await expect(page.locator('[name="policies[0][insurer]"]')).toHaveValue('Newer Carrier');
         await expect(page.locator('[name="policies[0][effectiveDate]"]')).toHaveValue('2023-01-01');
-        await expect(page.locator('[name="policies[0][premium]"]')).toHaveValue('2000');
+        await expect(page.locator('[name="policies[0][premium]"]')).toHaveValue('$2,000');
 
         const duplicateClaim = page.locator('.policy-entry').first().locator('.claim-entry').first();
-        await expect(duplicateClaim.locator('input[name$="[incurred]"]')).toHaveValue('30000');
-        await expect(duplicateClaim.locator('input[name$="[paid]"]')).toHaveValue('100');
-        await expect(duplicateClaim.locator('input[name$="[reserved]"]')).toHaveValue('5000');
+        await expect(duplicateClaim.locator('input[name$="[incurred]"]')).toHaveValue('$30,000');
+        await expect(duplicateClaim.locator('input[name$="[paid]"]')).toHaveValue('$100');
+        await expect(duplicateClaim.locator('input[name$="[reserved]"]')).toHaveValue('$5,000');
         await expect(duplicateClaim.locator('input[name$="[details]"]')).toHaveValue('Updated claim details');
 
         await expect(page.locator('#insurance-history-summary-table')).toBeVisible();

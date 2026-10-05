@@ -44,14 +44,20 @@ function createPolicyEntry(policyIndex, data = {}) {
                         </div>
                     </div>
 
-                    <div class="policy-field form-field">
-                        <label for="effective-date-${policyIndex}">Effective Date</label>
-                        <input type="date" id="effective-date-${policyIndex}" name="policies[${policyIndex}][effectiveDate]" value="${data.effectiveDate || ""}">
+                    <div class="policy-field form-field policy-period-field" role="group" aria-labelledby="policy-period-label-${policyIndex}">
+                        <span class="form-field-label" id="policy-period-label-${policyIndex}">Policy Period</span>
+                        <div class="policy-period-inputs">
+                            <label class="visually-hidden" for="effective-date-${policyIndex}">Effective Date</label>
+                            <input type="date" id="effective-date-${policyIndex}" name="policies[${policyIndex}][effectiveDate]" value="${data.effectiveDate || ""}">
+                            <span class="policy-period-separator" aria-hidden="true">–</span>
+                            <label class="visually-hidden" for="expiration-date-${policyIndex}">Expiration Date</label>
+                            <input type="date" id="expiration-date-${policyIndex}" name="policies[${policyIndex}][expirationDate]" value="${data.expirationDate || ""}">
+                        </div>
                     </div>
 
-                    <div class="policy-field form-field">
-                        <label for="expiration-date-${policyIndex}">Expiration Date</label>
-                        <input type="date" id="expiration-date-${policyIndex}" name="policies[${policyIndex}][expirationDate]" value="${data.expirationDate || ""}">
+                    <div class="policy-field form-field policy-valuation-field">
+                        <label for="valuation-date-${policyIndex}">Valuation Date</label>
+                        <input type="date" id="valuation-date-${policyIndex}" name="policies[${policyIndex}][valuationDate]" value="${escapeHtml(data.valuationDate || "")}">
                     </div>
 
                     <div class="policy-field form-field">
@@ -61,7 +67,7 @@ function createPolicyEntry(policyIndex, data = {}) {
 
                     <div class="policy-field form-field">
                         <label for="premium-${policyIndex}">Policy Premium</label>
-                        <input type="text" id="premium-${policyIndex}" name="policies[${policyIndex}][premium]" value="${data.premium || ""}" placeholder="Premium">
+                        <input type="text" id="premium-${policyIndex}" name="policies[${policyIndex}][premium]" value="${data.premium ?? ""}" placeholder="Premium">
                     </div>
 
                     <div class="policy-field form-field policy-number-field">
@@ -70,10 +76,7 @@ function createPolicyEntry(policyIndex, data = {}) {
                     </div>
                 </div>
 
-                <section class="claims-form" aria-labelledby="claims-title-${policyIndex}">
-                    <header class="claims-form-header">
-                        <h4 id="claims-title-${policyIndex}" class="claims-form-title">Claims on policy</h4>
-                    </header>
+                <section class="claims-form" aria-label="Claims on policy">
                     <div class="claim-list">
                         <div class="claim-table-header">
                             <div>Incident Date</div>
@@ -91,6 +94,7 @@ function createPolicyEntry(policyIndex, data = {}) {
                 </section>
             `;
 
+  initializePolicyMoneyInputs(policy);
   return policy;
 }
 
@@ -144,6 +148,7 @@ function addPriorPolicy(sourcePolicy) {
     coverageLines: selectedLines,
     effectiveDate: addYearsToDate(effectiveInput.value, -1),
     expirationDate: effectiveInput.value,
+    valuationDate: getPolicyField(sourcePolicy, 'valuationDate').value,
     insurer: insurerInput.value,
     premium: premiumInput.value,
     policyNumber: newPolicyNumber,
@@ -180,6 +185,7 @@ function addRenewalPolicy(sourcePolicy) {
     coverageLines: selectedLines,
     effectiveDate: newEffective,
     expirationDate: addYearsToDate(newEffective, 1),
+    valuationDate: getPolicyField(sourcePolicy, 'valuationDate').value,
     insurer: insurerInput.value,
     premium: premiumInput.value,
     policyNumber: newPolicyNumber,
@@ -234,23 +240,23 @@ function createClaimEntry(policyIndex, claimsIndex, claim = {}) {
                 </div>
                 <div class="claim-field">
                     <label for="claim-incurred-${policyIndex}-${claimsIndex}">Incurred</label>
-                    <input type="text" id="claim-incurred-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][incurred]" value="${claim.incurred || ""}" placeholder="Incurred">
+                    <input type="text" id="claim-incurred-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][incurred]" value="${claim.incurred ?? ""}" placeholder="Incurred">
                 </div>
                 <div class="claim-field">
                     <label for="claim-alae-${policyIndex}-${claimsIndex}">ALAE</label>
-                    <input type="text" id="claim-alae-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][alae]" value="${claim.alae || ""}" placeholder="ALAE">
+                    <input type="text" id="claim-alae-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][alae]" value="${claim.alae ?? ""}" placeholder="ALAE">
                 </div>
                 <div class="claim-field">
                     <label for="claim-paid-${policyIndex}-${claimsIndex}">Paid</label>
-                    <input type="text" id="claim-paid-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][paid]" value="${claim.paid || ""}" placeholder="Paid">
+                    <input type="text" id="claim-paid-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][paid]" value="${claim.paid ?? ""}" placeholder="Paid">
                 </div>
                 <div class="claim-field">
                     <label for="claim-reserved-${policyIndex}-${claimsIndex}">Reserved</label>
-                    <input type="text" id="claim-reserved-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][reserved]" value="${claim.reserved || ""}" placeholder="Reserved">
+                    <input type="text" id="claim-reserved-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][reserved]" value="${claim.reserved ?? ""}" placeholder="Reserved">
                 </div>
                 <div class="claim-field">
                     <label for="claim-recovered-${policyIndex}-${claimsIndex}">Recovered</label>
-                    <input type="text" id="claim-recovered-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][recovered]" value="${claim.recovered || ""}" placeholder="Recovered">
+                    <input type="text" id="claim-recovered-${policyIndex}-${claimsIndex}" name="policies[${policyIndex}][claims][${claimsIndex}][recovered]" value="${claim.recovered ?? ""}" placeholder="Recovered">
                 </div>
                 <div class="claim-field">
                     <label for="claim-details-${policyIndex}-${claimsIndex}">Details</label>
@@ -260,6 +266,7 @@ function createClaimEntry(policyIndex, claimsIndex, claim = {}) {
                     <button type="button" class="button claim-remove remove-claim" aria-label="Remove claim"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
                 </div>
             `;
+  initializePolicyMoneyInputs(claimEntry);
   return claimEntry;
 }
 
@@ -536,6 +543,10 @@ function mergeExtractionRecords() {
     const valuationDate = fileRecord.valuationDate;
 
     policies.forEach((policy, index) => {
+      const incomingPolicy = {
+        ...policy,
+        valuation_date: toDateInputValue(policy.valuation_date || policy.valuationDate || valuationDate),
+      };
       const key = getRecordKey(
         policy,
         "policy_number",
@@ -548,7 +559,7 @@ function mergeExtractionRecords() {
           ? {
               record: mergeRecord(
                 current.record,
-                policy,
+                incomingPolicy,
                 current.valuationTimestamp,
                 fileRecord.valuationTimestamp,
               ),
@@ -558,7 +569,7 @@ function mergeExtractionRecords() {
               ),
             }
           : {
-              record: { ...policy },
+              record: incomingPolicy,
               valuationTimestamp: fileRecord.valuationTimestamp,
             },
       );
@@ -611,6 +622,7 @@ function createPoliciesFromLossRun(output = mergeExtractionRecords()) {
     const policyEntry = createPolicyEntry(index, {
       effectiveDate: toDateInputValue(policy.effective_date),
       expirationDate: toDateInputValue(policy.expiration_date),
+      valuationDate: toDateInputValue(policy.valuation_date || policy.valuationDate || getValuationDate(output)),
       insurer,
       premium: policy.premium ?? "",
       policyNumber: policy.policy_number || "",
@@ -682,6 +694,8 @@ function renderUploadedFiles() {
     )
     .join("");
   uploadedFilesTable.hidden = rows.length === 0;
+  const uploadSection = uploadedFilesTable.closest("#upload-loss-run");
+  if (uploadSection) uploadSection.hidden = rows.length === 0;
 }
 
 function sortUploadedFiles(key) {

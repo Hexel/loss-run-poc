@@ -5,8 +5,8 @@
                 grid-template-columns: 1fr 1fr;
             }
 
-            .large-loss-details,
             .coverage-group,
+            .policy-period-field,
             .policy-number-field {
                 grid-column: span 2;
             }
@@ -18,8 +18,21 @@
             }
 
             .coverage-group,
+            .policy-period-field,
             .policy-number-field {
                 grid-column: span 1;
+            }
+
+            .policy-period-field {
+                width: var(--date-control-width);
+            }
+
+            .policy-period-inputs {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .policy-period-separator {
+                display: none;
             }
 
             .panel.double-panel {
@@ -35,20 +48,6 @@
             .panel.double-panel .column.padded {
                 padding: var(--space-xl);
             }
-        }
-
-        #finale {
-            max-width: var(--content-width);
-            margin: 0 auto;
-        }
-
-        .continue-button {
-            margin-top: var(--space-lg);
-            margin-bottom: var(--space-lg);
-            padding: 0.8rem 1.2rem;
-            background: var(--color-action);
-            color: var(--color-surface);
-            font-size: 1.5rem;
         }
 
         .visually-hidden {

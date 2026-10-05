@@ -374,7 +374,8 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        .workbench-insurance-form .workbench-coverage-field {
+        .workbench-insurance-form .workbench-coverage-field,
+        .workbench-insurance-form .policy-period-field {
             grid-column: 1 / -1;
         }
 
@@ -985,14 +986,20 @@
                             </header>
                             <div class="form-row">
                                 <div class="form-field workbench-coverage-field"><label for="workbench-coverage-2025">Lines of Coverage</label><input id="workbench-coverage-2025" type="text" value="Auto Liability, Cargo"></div>
-                                <div class="form-field"><label for="workbench-effective-2025">Effective Date</label><input id="workbench-effective-2025" type="date" value="2025-01-01"></div>
-                                <div class="form-field"><label for="workbench-expiration-2025">Expiration Date</label><input id="workbench-expiration-2025" type="date" value="2026-01-01"></div>
+                                <div class="form-field policy-period-field" role="group" aria-labelledby="workbench-period-label-2025">
+                                    <span class="form-field-label" id="workbench-period-label-2025">Policy Period</span>
+                                    <div class="policy-period-inputs">
+                                        <label class="visually-hidden" for="workbench-effective-2025">Effective Date</label><input id="workbench-effective-2025" type="date" value="2025-01-01">
+                                        <span class="policy-period-separator" aria-hidden="true">–</span>
+                                        <label class="visually-hidden" for="workbench-expiration-2025">Expiration Date</label><input id="workbench-expiration-2025" type="date" value="2026-01-01">
+                                    </div>
+                                </div>
+                                <div class="form-field policy-valuation-field"><label for="workbench-valuation-2025">Valuation Date</label><input id="workbench-valuation-2025" type="date"></div>
                                 <div class="form-field"><label for="workbench-insurer-2025">Insurer</label><input id="workbench-insurer-2025" type="text" value="Summit Casualty"></div>
                                 <div class="form-field"><label for="workbench-premium-2025">Policy Premium</label><input id="workbench-premium-2025" type="text" value="$14,898.32"></div>
                                 <div class="form-field"><label for="workbench-number-2025">Policy Number</label><input id="workbench-number-2025" type="text" value="SUMMIT-2025-01"></div>
                             </div>
-                            <section class="claims-form open" aria-labelledby="workbench-claims-title-2025">
-                                <header class="claims-form-header"><h6 id="workbench-claims-title-2025" class="claims-form-title">Claims on policy</h6></header>
+                            <section class="claims-form open" aria-label="Claims on policy">
                                 <div class="claim-list" tabindex="0" role="region" aria-label="2025 claims table">
                                     <div class="claim-table-header">
                                         <div>Incident Date</div><div>Status</div><div>Incurred</div><div>ALAE</div><div>Paid</div><div>Reserved</div><div>Recovered</div><div>Details</div><div class="claim-action-header"></div>
@@ -1025,14 +1032,20 @@
                             </header>
                             <div class="form-row">
                                 <div class="form-field workbench-coverage-field"><label for="workbench-coverage-2024">Lines of Coverage</label><input id="workbench-coverage-2024" type="text" value="Auto Liability, Cargo"></div>
-                                <div class="form-field"><label for="workbench-effective-2024">Effective Date</label><input id="workbench-effective-2024" type="date" value="2024-01-01"></div>
-                                <div class="form-field"><label for="workbench-expiration-2024">Expiration Date</label><input id="workbench-expiration-2024" type="date" value="2025-01-01"></div>
+                                <div class="form-field policy-period-field" role="group" aria-labelledby="workbench-period-label-2024">
+                                    <span class="form-field-label" id="workbench-period-label-2024">Policy Period</span>
+                                    <div class="policy-period-inputs">
+                                        <label class="visually-hidden" for="workbench-effective-2024">Effective Date</label><input id="workbench-effective-2024" type="date" value="2024-01-01">
+                                        <span class="policy-period-separator" aria-hidden="true">–</span>
+                                        <label class="visually-hidden" for="workbench-expiration-2024">Expiration Date</label><input id="workbench-expiration-2024" type="date" value="2025-01-01">
+                                    </div>
+                                </div>
+                                <div class="form-field policy-valuation-field"><label for="workbench-valuation-2024">Valuation Date</label><input id="workbench-valuation-2024" type="date"></div>
                                 <div class="form-field"><label for="workbench-insurer-2024">Insurer</label><input id="workbench-insurer-2024" type="text" value="Summit Casualty"></div>
                                 <div class="form-field"><label for="workbench-premium-2024">Policy Premium</label><input id="workbench-premium-2024" type="text" value="$13,800.00"></div>
                                 <div class="form-field"><label for="workbench-number-2024">Policy Number</label><input id="workbench-number-2024" type="text" value="SUMMIT-2024-01"></div>
                             </div>
-                            <section class="claims-form open" aria-labelledby="workbench-claims-title-2024">
-                                <header class="claims-form-header"><h6 id="workbench-claims-title-2024" class="claims-form-title">Claims on policy</h6></header>
+                            <section class="claims-form open" aria-label="Claims on policy">
                                 <div class="claim-list" tabindex="0" role="region" aria-label="2024 claims table">
                                     <div class="claim-table-header">
                                         <div>Incident Date</div><div>Status</div><div>Incurred</div><div>ALAE</div><div>Paid</div><div>Reserved</div><div>Recovered</div><div>Details</div><div class="claim-action-header"></div>
@@ -1073,6 +1086,7 @@
     </dialog>
 
     <script src="scripts/07-policy-menu.js"></script>
+    <script src="scripts/08-input-state.js"></script>
     <script>
         const workbenchModal = document.getElementById('workbench-modal');
         const workbenchBody = document.querySelector('.workbench-body');
