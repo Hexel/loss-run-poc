@@ -389,9 +389,19 @@ function hideLoading() {
   if (loadingPanel) loadingPanel.hidden = true;
 }
 
-function showUploadError(message) {
+function showUploadError(message, documentId) {
   if (uploadError) {
     uploadError.textContent = message || "The loss run could not be processed.";
+    if (documentId) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Check again";
+      button.addEventListener("click", () => {
+        button.disabled = true;
+        retryDocument(documentId).catch(() => {});
+      });
+      uploadError.append(" ", button);
+    }
     uploadError.hidden = false;
   }
 }
@@ -731,38 +741,44 @@ function previewUploadedFile(uploadOrder) {
   }
 }
 
-async function processUploadedFile(file, uploadOrder) {
+const documentRetries = new Map();
+
+async function processUploadedFile(file, uploadOrder, context = {}) {
   const fileHash = await computeFileHash(file);
   const cached = getCachedExtraction(fileHash);
   let completed = cached && cached.output ? cached : null;
 
   if (!completed) {
-    const formData = new FormData();
-    formData.append("file", file, file.name);
-    const uploadResponse = await fetch(
-      APP_CONFIG.documentApiUrl + "/document",
-      {
-        method: "POST",
-        headers: { "x-api-key": DOCUMENT_PROCESSOR_APIKEY },
-        body: formData,
-      },
-    );
-    if (!uploadResponse.ok) {
-      const errorBody = await uploadResponse.json().catch(() => ({}));
-      throw new Error(
-        errorBody.message || "The document processor rejected the upload.",
+    if (!context.documentId) {
+      const formData = new FormData();
+      formData.append("file", file, file.name);
+      const uploadResponse = await fetch(
+        APP_CONFIG.documentApiUrl + "/document",
+        {
+          method: "POST",
+          headers: { "x-api-key": DOCUMENT_PROCESSOR_APIKEY },
+          body: formData,
+        },
       );
-    }
+      if (!uploadResponse.ok) {
+        const errorBody = await uploadResponse.json().catch(() => ({}));
+        throw new Error(
+          errorBody.message || "The document processor rejected the upload.",
+        );
+      }
 
-    const accepted = await uploadResponse.json();
-    if (!accepted.documentId)
-      throw new Error("The upload response did not include a documentId.");
-    completed = await pollDocument(accepted.documentId);
+      const accepted = await uploadResponse.json();
+      if (!accepted.documentId)
+        throw new Error("The upload response did not include a documentId.");
+      context.documentId = accepted.documentId;
+      if (context.retry) documentRetries.set(context.documentId, context.retry);
+    }
+    completed = await pollDocument(context.documentId);
     if (!completed?.output)
       throw new Error("The loss run could not be extracted.");
     cacheExtraction(fileHash, {
       output: completed.output,
-      documentId: accepted.documentId,
+      documentId: context.documentId,
       status: completed.status,
     });
   }
@@ -797,26 +813,78 @@ async function uploadAndPopulateLossRun(event) {
     return;
   }
 
-  showLoading(
-    files.length === 1
-      ? "Uploading file..."
-      : `Uploading ${files.length} files...`,
-  );
+  const contexts = files.map((file) => ({ file, record: null }));
+  let running = null;
+  const retry = () => {
+    if (running) return running;
+    running = populateUploadedFiles(contexts).finally(() => {
+      running = null;
+    });
+    return running;
+  };
+  contexts.forEach((context) => {
+    context.retry = retry;
+  });
+  await retry().catch(() => {});
+}
 
+async function populateUploadedFiles(contexts) {
+  showLoading(
+    contexts.length === 1
+      ? "Uploading file..."
+      : `Uploading ${contexts.length} files...`,
+  );
   try {
-    const newRecords = await Promise.all(
-      files.map((file, index) =>
-        processUploadedFile(file, uploadedFiles.length + index),
-      ),
+    // Wait for the whole batch so retries cannot race unfinished uploads.
+    const results = await Promise.allSettled(
+      contexts.map(async (context, index) => {
+        if (!context.record) {
+          context.record = await processUploadedFile(
+            context.file,
+            uploadedFiles.length + index,
+            context,
+          );
+        }
+        return context.record;
+      }),
     );
+    const failure = results.find((result) => result.status === "rejected");
+    if (failure) throw failure.reason;
+    const newRecords = results.map((result, index) => {
+      result.value.uploadOrder = uploadedFiles.length + index;
+      return result.value;
+    });
     uploadedFiles.push(...newRecords);
+    contexts.forEach((context) => documentRetries.delete(context.documentId));
     renderUploadedFiles();
     createPoliciesFromLossRun();
     hideLoading();
     previewUploadedFile(uploadedFiles.length - 1);
+    return newRecords;
   } catch (error) {
     hideLoading();
-    showUploadError(error.message || "The loss run could not be processed.");
+    showUploadError(error.message || "The loss run could not be processed.", error.documentId);
+    throw error;
+  }
+}
+
+// Console: await retryDocument("documentId"). Known uploads resume their batch;
+// other IDs populate the form and return the response without the original file.
+async function retryDocument(documentId) {
+  const retry = documentRetries.get(documentId);
+  if (retry) return retry();
+  showLoading("Checking document again...");
+  try {
+    const completed = await pollDocument(documentId);
+    if (!completed?.output)
+      throw new Error("The loss run could not be extracted.");
+    createPoliciesFromLossRun(completed.output);
+    return completed;
+  } catch (error) {
+    showUploadError(error.message || "The loss run could not be processed.", error.documentId);
+    throw error;
+  } finally {
+    hideLoading();
   }
 }
 
@@ -851,7 +919,9 @@ async function pollDocument(documentId) {
     showLoading("Processing PDF... (" + String(attempt + 1) + ")");
     await sleep(APP_CONFIG.pollIntervalMs);
   }
-  throw new Error(
+  const error = new Error(
     "The document processor did not finish extracting the PDF in time.",
   );
+  error.documentId = documentId;
+  throw error;
 }

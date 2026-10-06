@@ -237,4 +237,3 @@ function seedTestData(key = " ") {
 }
 
 initializeApp();
-seedTestData();

@@ -5,8 +5,8 @@ const APP_CONFIG = Object.freeze({
   largeLossThreshold: 25000,
   cachePrefix: "document-processor-cache-v1:",
   documentApiUrl: "https://api.dev.blackshieldrisk.com",
-  pollAttempts: 80,
-  pollIntervalMs: 1500,
+  pollAttempts: 500,
+  pollIntervalMs: 1000,
   coverageLines: [
     "Auto Liability",
     "Auto Physical Damage",
