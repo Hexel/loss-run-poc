@@ -85,6 +85,32 @@ function calculateChartTrend(points) {
   return { direction, color: colors[direction], label: labels[direction] };
 }
 
+function chartTrendSegments(points) {
+  return points.slice(1).flatMap((point, index) => {
+    const previous = points[index];
+    return Number.isFinite(previous.value) && Number.isFinite(point.value)
+      ? [{ points: [previous, point], ...calculateChartTrend([previous, point]) }]
+      : [];
+  });
+}
+
+function chartPointTrend(point, segments) {
+  return segments.find((segment) => segment.points[1] === point)
+    || segments.find((segment) => segment.points[0] === point)
+    || calculateChartTrend([point]);
+}
+
+function describeChartSegments(segments) {
+  return segments.map((segment) => `${segment.points[0].year} to ${segment.points[1].year}: ${segment.label} trend`).join("; ");
+}
+
+function chartAreaGradients(container, segments) {
+  return segments.map((segment, index) => `<linearGradient id="${container.id}-area-${index}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="${segment.color}" stop-opacity="0.18" />
+    <stop offset="100%" stop-color="${segment.color}" stop-opacity="0.02" />
+  </linearGradient>`).join("");
+}
+
 function renderAnimatedChart(container, markup) {
   const previous = new Map();
   container.querySelectorAll("svg [data-chart-key]").forEach((element) => {
@@ -154,32 +180,22 @@ function renderYearlyTrendChart(container, rows, settings) {
   const x = (year) => data.length === 1 ? 245 : 95 + (year - data[0].year) / (data[data.length - 1].year - data[0].year) * 300;
   const y = (value) => 210 - (value - floor) / (ceiling - floor) * 170;
   const ticks = Array.from({ length: Math.round((ceiling - floor) / step) + 1 }, (_, index) => floor + index * step);
-  const segments = [];
-  let segment = [];
-  data.forEach((point) => {
-    if (Number.isFinite(point.value)) segment.push(point);
-    else if (segment.length) { segments.push(segment); segment = []; }
-  });
-  if (segment.length) segments.push(segment);
+  const segments = chartTrendSegments(data);
   const line = (points) => points.map((point, index) => `${index ? "L" : "M"}${x(point.year)} ${y(point.value)}`).join(" ");
-  const trend = calculateChartTrend(data);
-  container.setAttribute("aria-label", `${settings.title} by policy year. X-axis: policy year. Y-axis: ${settings.axis}. ${valid.map((point) => `${point.year}: ${settings.formatValue(point.value)}`).join("; ")}.   ${settings.description} ${trend.label} trend. Stable means net change within 5% of the earliest available year; lower values are better.`);
-    renderAnimatedChart(container, `<svg class="reporting-lag-line-chart trend-${trend.direction}" viewBox="0 0 440 280" aria-hidden="true">
-    <defs><linearGradient id="${container.id}-area" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="${trend.color}" stop-opacity="0.18" />
-        <stop offset="100%" stop-color="${trend.color}" stop-opacity="0.02" />
-    </linearGradient></defs>
+  container.setAttribute("aria-label", `${settings.title} by policy year. X-axis: policy year. Y-axis: ${settings.axis}. ${valid.map((point) => `${point.year}: ${settings.formatValue(point.value)}`).join("; ")}. ${settings.description} ${describeChartSegments(segments)}. Stable means change within 5% of the previous available year; lower values are better. Missing values break the line.`);
+  renderAnimatedChart(container, `<svg class="reporting-lag-line-chart" viewBox="0 0 440 280" aria-hidden="true">
+    <defs>${chartAreaGradients(container, segments)}</defs>
     ${ticks.map((value) => `<path class="summary-trend-grid" d="M80 ${y(value)}H410" /><text class="summary-trend-label" text-anchor="end" x="68" y="${y(value) + 4}">${formatSummaryDecimal(value)}</text>`).join("")}
     <path class="summary-trend-axis" d="M80 40V210H410" />
-    ${segments.filter((points) => points.length > 1).map((points, index) => `<path data-chart-key="area-${index}" d="${line(points)} L${x(points[points.length - 1].year)} 210 L${x(points[0].year)} 210Z" fill="url(#${container.id}-area)" />`).join("")}
-    ${segments.map((points, index) => `<path data-chart-key="line-${index}" class="summary-trend-line" d="${line(points)}" />`).join("")}
-    ${valid.map((point) => `<circle data-chart-key="point-${point.year}" class="summary-trend-point" cx="${x(point.year)}" cy="${y(point.value)}" r="5"><title>${point.year}: ${settings.formatValue(point.value)}</title></circle>
+    ${segments.map((segment, index) => `<path data-chart-key="area-${segment.points[0].year}-${segment.points[1].year}" d="${line(segment.points)} L${x(segment.points[1].year)} 210 L${x(segment.points[0].year)} 210Z" fill="url(#${container.id}-area-${index})" />`).join("")}
+    ${segments.map((segment) => `<path data-chart-key="line-${segment.points[0].year}-${segment.points[1].year}" class="summary-trend-line trend-${segment.direction}" d="${line(segment.points)}" />`).join("")}
+    ${valid.map((point) => `<circle data-chart-key="point-${point.year}" class="summary-trend-point trend-${chartPointTrend(point, segments).direction}" cx="${x(point.year)}" cy="${y(point.value)}" r="5"><title>${point.year}: ${settings.formatValue(point.value)}</title></circle>
       ${data.length <= 6 ? `<text data-chart-key="label-${point.year}" class="summary-trend-label summary-trend-axis-title" text-anchor="middle" x="${x(point.year)}" y="${y(point.value) - 14}">${settings.formatValue(point.value)}</text>` : ""}`).join("")}
     ${data.filter((point, index) => index === 0 || index === data.length - 1 || index % Math.ceil(data.length / 6) === 0)
       .map((point) => `<text class="summary-trend-label" text-anchor="middle" x="${x(point.year)}" y="232">${point.year}</text>`).join("")}
     <text class="summary-trend-label summary-trend-axis-title" text-anchor="middle" x="245" y="265">Policy year</text>
     <text class="summary-trend-label summary-trend-axis-title" text-anchor="middle" transform="translate(18 125) rotate(-90)">${settings.axis}</text>
-  </svg><p class="chart-trend-note trend-${trend.direction}" aria-hidden="true">${trend.label} trend · lower is better</p>`);
+  </svg><p class="chart-trend-note" aria-hidden="true">Year-to-year: <span class="trend-positive">improving</span> · <span class="trend-stable">stable (within 5%)</span> · <span class="trend-negative">worsening</span> · lower is better</p>`);
 }
 
 function renderLossCostPerUnitChart(container, rows, valueForRow, incurred = false) {
@@ -195,7 +211,7 @@ function renderLossCostPerUnitChart(container, rows, valueForRow, incurred = fal
     { name: `Developed ${measure}`, key: "developed", className: "loss-cost-developed" },
   ].map((item) => {
     const points = data.map((point) => ({ year: point.year, value: point[item.key] }));
-    return { ...item, points, trend: calculateChartTrend(points) };
+    return { ...item, points, segments: chartTrendSegments(points) };
   });
   const valid = series.flatMap((item) => item.points.filter((point) => Number.isFinite(point.value)));
   if (!valid.length) {
@@ -216,38 +232,26 @@ function renderLossCostPerUnitChart(container, rows, valueForRow, incurred = fal
   const tickMoney = (value) => new Intl.NumberFormat("en-US", {
     style: "currency", currency: "USD", notation: "compact", maximumSignificantDigits: 3,
   }).format(value);
-  series.forEach((item) => {
-    item.segments = [];
-    let segment = [];
-    item.points.forEach((point) => {
-      if (Number.isFinite(point.value)) segment.push(point);
-      else if (segment.length) { item.segments.push(segment); segment = []; }
-    });
-    if (segment.length) item.segments.push(segment);
-  });
   const line = (points) => points.map((point, index) => `${index ? "L" : "M"}${x(point.year)} ${y(point.value)}`).join(" ");
   const ticks = Array.from({ length: Math.round((ceiling - floor) / step) + 1 }, (_, index) => floor + index * step);
   const fullMoney = (value) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
   const description = series.map((item) => `${item.name}: ${item.points.filter((point) => Number.isFinite(point.value))
-    .map((point) => `${point.year}: ${fullMoney(point.value)}${unitSuffix}`).join("; ")}. ${item.trend.label} trend`).join(". ");
+    .map((point) => `${point.year}: ${fullMoney(point.value)}${unitSuffix}`).join("; ")}. ${describeChartSegments(item.segments)}`).join(". ");
   const formula = incurred ? "Undeveloped equals total incurred; developed equals total incurred times LDF." : "Undeveloped equals total incurred divided by units; developed equals total incurred times LDF divided by units. Years without units have no data.";
-  container.setAttribute("aria-label", `${measure} line chart. X-axis: policy year. Y-axis: ${measure.toLowerCase()} in dollars. ${description}. ${formula} Developed values require a valid LDF. Stable means net change within 5% of the earliest available year; lower values are better.`);
+  container.setAttribute("aria-label", `${measure} line chart. X-axis: policy year. Y-axis: ${measure.toLowerCase()} in dollars. ${description}. ${formula} Developed values require a valid LDF. Stable means change within 5% of the previous available year; lower values are better. Missing values break the line.`);
   renderAnimatedChart(container, `<svg class="loss-cost-line-chart" viewBox="0 0 440 280" aria-hidden="true">
-    <defs><linearGradient id="${container.id}-area" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${series[0].trend.color}" stop-opacity="0.18" />
-      <stop offset="100%" stop-color="${series[0].trend.color}" stop-opacity="0.02" />
-    </linearGradient></defs>
+    <defs>${chartAreaGradients(container, series[0].segments)}</defs>
     ${ticks.map((value) => `<path class="loss-cost-grid" d="M80 ${y(value)}H410" />
       <text class="loss-cost-label" text-anchor="end" x="68" y="${y(value) + 4}">${tickMoney(value)}</text>`).join("")}
     <path class="loss-cost-axis" d="M80 40V210H410" />
-    ${series[0].segments.filter((points) => points.length > 1).map((points, index) => `<path data-chart-key="area-${index}" d="${line(points)} L${x(points[points.length - 1].year)} 210 L${x(points[0].year)} 210Z" fill="url(#${container.id}-area)" />`).join("")}
-    ${series.map((item) => `<g class="${item.className} trend-${item.trend.direction}">
-      ${item.segments.map((points, index) => `<path data-chart-key="line-${item.key}-${index}" class="loss-cost-line" d="${line(points)}" />`).join("")}
+    ${series[0].segments.map((segment, index) => `<path data-chart-key="area-${segment.points[0].year}-${segment.points[1].year}" d="${line(segment.points)} L${x(segment.points[1].year)} 210 L${x(segment.points[0].year)} 210Z" fill="url(#${container.id}-area-${index})" />`).join("")}
+    ${series.map((item) => `<g class="${item.className}">
+      ${item.segments.map((segment) => `<path data-chart-key="line-${item.key}-${segment.points[0].year}-${segment.points[1].year}" class="loss-cost-line trend-${segment.direction}" d="${line(segment.points)}" />`).join("")}
       ${item.points.filter((point) => Number.isFinite(point.value)).map((point) => {
         const undeveloped = data.find((entry) => entry.year === point.year).value;
         const closeToUndeveloped = item.key === "developed" && Number.isFinite(undeveloped) && Math.abs(y(point.value) - y(undeveloped)) < 28;
         const labelY = closeToUndeveloped ? Math.min(y(point.value), y(undeveloped)) - 30 : y(point.value) - 14;
-        return `<circle data-chart-key="point-${item.key}-${point.year}" class="loss-cost-point" cx="${x(point.year)}" cy="${y(point.value)}" r="${item.key === 'developed' ? 3 : 5}"><title>${item.name}, ${point.year}: ${fullMoney(point.value)}${unitSuffix}</title></circle>
+        return `<circle data-chart-key="point-${item.key}-${point.year}" class="loss-cost-point trend-${chartPointTrend(point, item.segments).direction}" cx="${x(point.year)}" cy="${y(point.value)}" r="${item.key === 'developed' ? 3 : 5}"><title>${item.name}, ${point.year}: ${fullMoney(point.value)}${unitSuffix}</title></circle>
           <text data-chart-key="label-${item.key}-${point.year}" class="loss-cost-label summary-trend-axis-title" text-anchor="middle" x="${x(point.year)}" y="${labelY}">${tickMoney(point.value)}</text>`;
       }).join("")}
     </g>`).join("")}
@@ -257,8 +261,8 @@ function renderLossCostPerUnitChart(container, rows, valueForRow, incurred = fal
     <text class="loss-cost-label loss-cost-axis-title" text-anchor="middle" transform="translate(18 125) rotate(-90)">${incurred ? "Incurred loss ($)" : "Loss cost per unit ($)"}</text>
   </svg>
   <div class="loss-cost-legend" aria-hidden="true">
-    ${series.map((item) => `<span class="${item.className} trend-${item.trend.direction}" title="${item.trend.label} trend · lower is better">${item.name}</span>`).join("")}
-  </div>`);
+    ${series.map((item) => `<span class="${item.className}">${item.name}</span>`).join("")}
+  </div><p class="chart-trend-note" aria-hidden="true">Year-to-year: <span class="trend-positive">improving</span> · <span class="trend-stable">stable (within 5%)</span> · <span class="trend-negative">worsening</span> · lower is better</p>`);
 }
 
 function renderSummaryLineChart(containerId, rows, valueForRow, suffix) {

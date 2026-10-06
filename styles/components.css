@@ -390,10 +390,12 @@ sup {
 
 .chart-trend-note {
   margin: var(--space-sm) 0 0;
-  color: var(--trend-color);
+  color: var(--color-text-muted);
   font-size: 0.8rem;
   text-align: center;
 }
+
+.chart-trend-note span { color: var(--trend-color); }
 
 .loss-cost-line,
 .summary-trend-line {
@@ -430,7 +432,7 @@ sup {
 .loss-cost-legend span::before {
   content: "";
   flex: 0 0 1.5rem;
-  border-top: 3px solid var(--trend-color, var(--color-action));
+  border-top: 3px solid var(--color-text-muted);
 }
 
 .loss-cost-legend .loss-cost-developed::before { border-top-style: dashed; }

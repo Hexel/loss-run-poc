@@ -724,7 +724,7 @@ test('yearly reporting lags exclude missing dates and update table, average, and
     await expect(page.locator('#average-reporting-lag')).toHaveText('6.3 days');
     const chart = page.locator('#average-reporting-lag-chart');
     await expect(chart.locator('circle')).toHaveCount(3);
-    await expect(chart.locator('.summary-trend-line')).toHaveCount(2);
+    await expect(chart.locator('.summary-trend-line')).toHaveCount(1);
     const policy2024 = page.locator('.policy-entry').filter({ has: page.locator('input[name$="[effectiveDate]"][value="2024-01-01"]') });
     await policy2024.getByLabel('Incident Date', { exact: true }).fill('2024-02-28');
     await policy2024.getByLabel('Reported Date', { exact: true }).fill('2024-03-01');
@@ -956,7 +956,7 @@ for (const width of [1440, 390]) {
         await page.evaluate(() => seedTestData());
         const chart = page.locator('#average-reporting-lag-chart');
         const average = page.locator('#insurance-history-summary-foot tr:first-child .reporting-lag-cell');
-        const originalLine = await chart.locator('.summary-trend-line').getAttribute('d');
+        const originalLine = await chart.locator('.summary-trend-line').last().getAttribute('d');
         await page.getByRole('button', { name: 'Override average reporting lag for policy year 2025', exact: true }).click();
         const latest = page.getByRole('spinbutton', { name: 'Override average reporting lag for policy year 2025', exact: true });
         await latest.fill('20.5');
@@ -964,7 +964,7 @@ for (const width of [1440, 390]) {
         await expect(chart.locator('circle title').last()).toHaveText('2025: 20.5 days');
         await expect(chart).toHaveAttribute('aria-label', /2025: 20\.5 days/);
         await expect(average).toHaveText('9 days');
-        expect(await chart.locator('.summary-trend-line').getAttribute('d')).not.toBe(originalLine);
+        expect(await chart.locator('.summary-trend-line').last().getAttribute('d')).not.toBe(originalLine);
         await latest.fill('');
         await expect(chart.locator('circle')).toHaveCount(3);
         await expect(chart).not.toHaveAttribute('aria-label', /2025:/);
@@ -982,7 +982,7 @@ for (const width of [1440, 390]) {
         await expect(average).toHaveText('8.4 days');
         await page.getByRole('button', { name: 'Revert average reporting lag for policy year 2024', exact: true }).click();
         await expect(average).toHaveText('6.4 days');
-        await expect(chart.locator('.summary-trend-line')).toHaveAttribute('d', originalLine);
+        await expect(chart.locator('.summary-trend-line').last()).toHaveAttribute('d', originalLine);
         for (const year of [2025, 2024, 2023, 2022]) {
             await page.getByRole('button', { name: `Override average reporting lag for policy year ${year}`, exact: true }).click();
             await page.getByRole('spinbutton', { name: `Override average reporting lag for policy year ${year}`, exact: true }).fill('');
